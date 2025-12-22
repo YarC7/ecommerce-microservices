@@ -261,8 +261,10 @@ jobs:
 
       - name: Configure kubectl
         run: |
-          echo "${{ secrets.KUBE_CONFIG }}" > kubeconfig.yaml
-          export KUBECONFIG=kubeconfig.yaml
+          # Tạo thư mục .kube và ghi đè cấu hình vào file config mặc định
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+          chmod 600 ~/.kube/config
 
       - name: Update deployment images
         run: |
