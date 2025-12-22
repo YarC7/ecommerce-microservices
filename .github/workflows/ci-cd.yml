@@ -149,6 +149,17 @@ jobs:
                   for svc in api-gateway product-service order-service inventory-service notification-service payment-service; do
                     kubectl rollout status -n pr-test deployment/${svc} --timeout=2m
                   done
+                  for svc in api-gateway product-service order-service inventory-service notification-service payment-service; do
+                    echo "Checking status of $svc..."
+                    # Đợi status nhưng nếu lỗi thì in ra log ngay
+                    kubectl rollout status -n pr-test deployment/${svc} --timeout=3m || {
+                      echo "--- LOGS FOR $svc ---"
+                      kubectl logs -n pr-test deployment/${svc} --all-containers --tail=50
+                      echo "--- DESCRIPTION OF $svc ---"
+                      kubectl describe pod -n pr-test -l app=${svc}
+                      exit 1
+                    }
+                  done
 
                 - name: Cleanup kind cluster
                   if: always()
