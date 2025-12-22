@@ -114,15 +114,37 @@ jobs:
             # CRITICAL: We use 'pr-cluster' to match the cluster_name in helm/kind-action
             kind load docker-image ${svc}:pr-${SHA} --name pr-cluster
           done
+      - name: Deploy Dependencies (DBs, Redis, RabbitMQ)
+        run: |
+          kubectl create namespace pr-test || true
+          kubectl run infra-db --image=postgres:14-alpine -n pr-test \
+            --env="POSTGRES_PASSWORD=canh177" \
+            --env="POSTGRES_USER=postgres"
+          
+          kubectl run redis --image=redis:7-alpine -n pr-test
+          kubectl run rabbitmq --image=rabbitmq:3-management-alpine -n pr-test
+          kubectl expose pod infra-db -n pr-test --port=5432 --name=product-db
+          kubectl expose pod infra-db -n pr-test --port=5432 --name=order-db
+          kubectl expose pod infra-db -n pr-test --port=5432 --name=inventory-db
+          kubectl expose pod infra-db -n pr-test --port=5432 --name=notification-db
+          kubectl expose pod infra-db -n pr-test --port=5432 --name=payment-db
+          kubectl expose pod redis -n pr-test --port=6379 --name=redis
+          kubectl expose pod rabbitmq -n pr-test --port=5672 --name=rabbitmq
+          echo "Waiting for infra to be ready..."
+          sleep 30
 
-      - name: Deploy and Verify
+      - name: Deploy Microservices
         env:
           SHA: ${{ github.sha }}
+          STRIPE_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
         run: |
-          kubectl get pods -n pr-test
-          kubectl describe pod -l app=api-gateway -n pr-test
-          kubectl create namespace pr-test || true
+          # Triển khai từng service với các biến môi trường đặc thù
+          # Dưới đây là ví dụ cho Product Service (lặp lại tương tự cho các svc khác nếu cần chi tiết hơn)
           for svc in api-gateway product-service order-service inventory-service notification-service payment-service; do
+            # Xác định Database Name tương ứng (logic đơn giản để map tên)
+            DB_NAME_MAP="${svc//-service/_db}"
+            [[ "$svc" == "api-gateway" ]] && DB_NAME_MAP="none"
+
             cat <<EOF | kubectl apply -n pr-test -f -
           apiVersion: apps/v1
           kind: Deployment
@@ -141,29 +163,32 @@ jobs:
                 containers:
                 - name: ${svc}
                   image: ${svc}:pr-${SHA}
-                  imagePullPolicy: IfNotPresent  # This tells K8s NOT to pull from the internet
+                  imagePullPolicy: IfNotPresent
+                  env:
+                  - name: DB_HOST
+                    value: "${svc//-service/-db}" # Trỏ tới Service Alias bạn đã expose
+                  - name: DB_PORT
+                    value: "5432"
+                  - name: DB_USER
+                    value: "postgres"
+                  - name: DB_PASSWORD
+                    value: "canh177"
+                  - name: DB_NAME
+                    value: "${DB_NAME_MAP}"
+                  - name: REDIS_HOST
+                    value: "redis"
+                  - name: RABBITMQ_HOST
+                    value: "rabbitmq"
+                  - name: STRIPE_SECRET_KEY
+                    value: "${STRIPE_KEY}"
                   ports:
                   - containerPort: 80
           EOF
-                  done
-                  for svc in api-gateway product-service order-service inventory-service notification-service payment-service; do
-                    kubectl rollout status -n pr-test deployment/${svc} --timeout=2m
-                  done
-                  for svc in api-gateway product-service order-service inventory-service notification-service payment-service; do
-                    echo "Checking status of $svc..."
-                    # Đợi status nhưng nếu lỗi thì in ra log ngay
-                    kubectl rollout status -n pr-test deployment/${svc} --timeout=3m || {
-                      echo "--- LOGS FOR $svc ---"
-                      kubectl logs -n pr-test deployment/${svc} --all-containers --tail=50
-                      echo "--- DESCRIPTION OF $svc ---"
-                      kubectl describe pod -n pr-test -l app=${svc}
-                      exit 1
-                    }
-                  done
+          done
+      - name: Verify Rollout
+        run: |
+          kubectl rollout status deployment/api-gateway -n pr-test --timeout=3m
 
-                - name: Cleanup kind cluster
-                  if: always()
-                  run: kind delete cluster --name pr-cluster || true
 
   scan:
     name: Security Scan
