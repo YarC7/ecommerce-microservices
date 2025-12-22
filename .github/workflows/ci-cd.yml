@@ -118,7 +118,16 @@ jobs:
         run: |
           kubectl create namespace pr-test || true
           
-          # Create a ConfigMap with a shell script to initialize all DBs
+          # 1. Triển khai Redis (Cả Deployment và Service cùng lúc)
+          kubectl create deployment redis --image=redis:7-alpine -n pr-test
+          kubectl expose deployment redis --port=6379 -n pr-test
+
+          # 2. Triển khai RabbitMQ
+          kubectl create deployment rabbitmq --image=rabbitmq:3-management-alpine -n pr-test
+          kubectl expose deployment rabbitmq --port=5672 -n pr-test
+
+          # 3. Triển khai Infra-DB (Postgres)
+          # Tạo ConfigMap để khởi tạo nhiều Database cùng lúc
           cat <<EOF | kubectl apply -n pr-test -f -
           apiVersion: v1
           kind: ConfigMap
@@ -133,37 +142,46 @@ jobs:
               psql -U postgres -c "CREATE DATABASE payment_db;"
           EOF
 
-          # Deploy infra-db with the initialization script mounted
-          kubectl run infra-db --image=postgres:14-alpine -n pr-test \
-            --env="POSTGRES_PASSWORD=canh177" \
-            --env="POSTGRES_USER=postgres" \
-            --overrides='
-            {
-              "spec": {
-                "containers": [{
-                  "name": "infra-db",
-                  "image": "postgres:14-alpine",
-                  "env": [{"name": "POSTGRES_PASSWORD", "value": "canh177"}],
-                  "volumeMounts": [{"name": "init-vol", "mountPath": "/docker-entrypoint-initdb.d"}]
-                }],
-                "volumes": [{
-                  "name": "init-vol",
-                  "configMap": {"name": "db-init-script"}
-                }]
-              }
-            }'
+          # Triển khai Postgres Deployment
+          cat <<EOF | kubectl apply -n pr-test -f -
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: infra-db
+          spec:
+            selector:
+              matchLabels:
+                app: infra-db
+            template:
+              metadata:
+                labels:
+                  app: infra-db
+              spec:
+                containers:
+                - name: postgres
+                  image: postgres:14-alpine
+                  env:
+                  - name: POSTGRES_PASSWORD
+                    value: "canh177"
+                  volumeMounts:
+                  - name: init-script
+                    mountPath: /docker-entrypoint-initdb.d
+                volumes:
+                - name: init-script
+                  configMap:
+                    name: db-init-script
+          EOF
 
-          # Create DNS Aliases (Keep these as they are correct in your file)
-          kubectl expose pod infra-db -n pr-test --port=5432 --name=product-db
-          kubectl expose pod infra-db -n pr-test --port=5432 --name=order-db
-          kubectl expose pod infra-db -n pr-test --port=5432 --name=inventory-db
-          kubectl expose pod infra-db -n pr-test --port=5432 --name=notification-db
-          kubectl expose pod infra-db -n pr-test --port=5432 --name=payment-db
-          kubectl expose pod redis -n pr-test --port=6379 --name=redis
-          kubectl expose pod rabbitmq -n pr-test --port=5672 --name=rabbitmq
-          
-          echo "Waiting for infra to be ready and DBs to be created..."
-          sleep 45
+          # 4. Tạo các Service Alias (Để microservices tìm thấy DB qua DNS)
+          for db in product-db order-db inventory-db notification-db payment-db; do
+            kubectl create service clusterip $db -n pr-test --tcp=5432:5432 --dry-run=client -o yaml | \
+            sed "s/targetPort: 5432/targetPort: 5432\n  selector:\n    app: infra-db/" | kubectl apply -f -
+          done
+
+          echo "Waiting for infra to be ready..."
+          kubectl wait --for=condition=available --timeout=60s deployment/redis -n pr-test
+          kubectl wait --for=condition=available --timeout=60s deployment/infra-db -n pr-test
+          sleep 10
 
       - name: Deploy Microservices
         env:
