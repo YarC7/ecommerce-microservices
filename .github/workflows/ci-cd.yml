@@ -177,6 +177,73 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/payment-service:${{ github.sha }}
 
+  k8s-test:
+    name: Kubernetes Kind smoke tests
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Kind
+        uses: engineerd/setup-kind@v0.11.0
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: "v1.25.0"
+
+      - name: Create kind cluster
+        run: kind create cluster --name pr-cluster --wait 60s
+
+      - name: Build images and load into kind
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          set -o errexit
+          services=(api-gateway product-service order-service inventory-service notification-service payment-service)
+          for svc in "${services[@]}"; do
+            echo "Building $svc..."
+            docker build -f $svc/Dockerfile -t ${svc}:pr-${SHA} .
+            kind load docker-image ${svc}:pr-${SHA} --name pr-cluster
+          done
+
+      - name: Deploy test manifests
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          kubectl create namespace pr-test || true
+          for svc in api-gateway product-service order-service inventory-service notification-service payment-service; do
+            cat <<EOF | kubectl apply -n pr-test -f -
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: ${svc}
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: ${svc}
+            template:
+              metadata:
+                labels:
+                  app: ${svc}
+              spec:
+                containers:
+                - name: ${svc}
+                  image: ${svc}:pr-${SHA}
+                  ports:
+                  - containerPort: 80
+          EOF
+                    done
+                    for svc in api-gateway product-service order-service inventory-service notification-service payment-service; do
+                      kubectl rollout status -n pr-test deployment/${svc} --timeout=2m || (kubectl describe -n pr-test deployment/${svc}; kubectl logs -n pr-test -l app=${svc} --tail=100; exit 1)
+                    done
+
+                - name: Cleanup kind cluster
+                  if: always()
+                  run: kind delete cluster --name pr-cluster || true
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
