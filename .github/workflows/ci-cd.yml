@@ -181,7 +181,7 @@ jobs:
     name: Kubernetes Kind smoke tests
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'pull_request'
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - uses: actions/checkout@v4
