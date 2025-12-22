@@ -36,7 +36,7 @@ services:
   rabbitmq:
     image: rabbitmq:3-management-alpine
     ports:
-      - "5672:5672"   # AMQP protocol port
+      - "5672:5672" # AMQP protocol port
       - "15672:15672" # Management UI port
     environment:
       - RABBITMQ_DEFAULT_USER=guest
@@ -155,16 +155,16 @@ services:
       - ./prometheus:/etc/prometheus
       - prometheus_data:/prometheus
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
     networks:
       - microservices-network
 
   # Grafana
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana-oss:latest
     ports:
       - "3000:3000"
     environment:
@@ -179,7 +179,7 @@ services:
 
   # Product Database
   product-db:
-    image: postgres:14-alpine
+    image: postgres:16-alpine
     ports:
       - "5432:5432"
     environment:
@@ -193,7 +193,7 @@ services:
 
   # Order Database
   order-db:
-    image: postgres:14-alpine
+    image: postgres:16-alpine
     ports:
       - "5433:5432"
     environment:
@@ -207,7 +207,7 @@ services:
 
   # Inventory Database
   inventory-db:
-    image: postgres:14-alpine
+    image: postgres:16-alpine
     ports:
       - "5434:5432"
     environment:
@@ -221,7 +221,7 @@ services:
 
   # Notification Database
   notification-db:
-    image: postgres:14-alpine
+    image: postgres:16-alpine
     ports:
       - "5435:5432"
     environment:
@@ -235,7 +235,7 @@ services:
 
   # Payment Database
   payment-db:
-    image: postgres:14-alpine
+    image: postgres:16-alpine
     ports:
       - "5436:5432"
     environment:
@@ -260,4 +260,4 @@ volumes:
 
 networks:
   microservices-network:
-    driver: bridge 
+    driver: bridge

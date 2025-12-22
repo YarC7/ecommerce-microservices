@@ -85,8 +85,8 @@ func main() {
 	// Payments
 	apiV1.Any("/payments/*path", createReverseProxy(paymentServiceURL, "/payments"))
 
-	// Documentation endpoint
-	r.GET("/", func(c *gin.Context) {
+	// Documentation endpoint (moved to /api to avoid clashing with the SPA root)
+	r.GET("/api", func(c *gin.Context) {
 		// List available endpoints
 		endpoints := map[string][]string{
 			"products": {
