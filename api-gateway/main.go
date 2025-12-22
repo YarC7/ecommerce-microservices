@@ -23,6 +23,13 @@ var (
 	inventoryServiceURL    = getEnv("INVENTORY_SERVICE_URL", "http://inventory-service:8082")
 	notificationServiceURL = getEnv("NOTIFICATION_SERVICE_URL", "http://notification-service:8083")
 	paymentServiceURL      = getEnv("PAYMENT_SERVICE_URL", "http://payment-service:8084")
+	customerServiceURL     = getEnv("CUSTOMER_SERVICE_URL", "http://customer-service:8085")
+	adminServiceURL        = getEnv("ADMIN_SERVICE_URL", "http://admin-service:8086")
+	cartServiceURL         = getEnv("CART_SERVICE_URL", "http://cart-service:8087")
+	reviewServiceURL       = getEnv("REVIEW_SERVICE_URL", "http://review-rating-service:8088")
+	searchServiceURL       = getEnv("SEARCH_SERVICE_URL", "http://search-service:8089")
+	logisticsServiceURL    = getEnv("LOGISTICS_SERVICE_URL", "http://logistics-service:8090")
+	promotionServiceURL    = getEnv("PROMOTION_SERVICE_URL", "http://promotion-service:8091")
 )
 
 // List of our services
@@ -85,6 +92,15 @@ func main() {
 	// Payments
 	apiV1.Any("/payments/*path", createReverseProxy(paymentServiceURL, "/payments"))
 
+	// New services proxies
+	apiV1.Any("/customers/*path", createReverseProxy(customerServiceURL, "/customers"))
+	apiV1.Any("/admins/*path", createReverseProxy(adminServiceURL, "/admins"))
+	apiV1.Any("/cart/*path", createReverseProxy(cartServiceURL, "/cart"))
+	apiV1.Any("/reviews/*path", createReverseProxy(reviewServiceURL, "/reviews"))
+	apiV1.Any("/search/*path", createReverseProxy(searchServiceURL, "/search"))
+	apiV1.Any("/logistics/*path", createReverseProxy(logisticsServiceURL, "/shipments"))
+	apiV1.Any("/promotions/*path", createReverseProxy(promotionServiceURL, "/promotions"))
+
 	// Documentation endpoint (moved to /api to avoid clashing with the SPA root)
 	r.GET("/api", func(c *gin.Context) {
 		// List available endpoints
@@ -125,6 +141,43 @@ func main() {
 				"POST /api/v1/payments/confirm - Confirm payment",
 				"GET /api/v1/payments/:id - Get payment details",
 				"GET /api/v1/payments/order/:orderId - Get payments by order ID",
+			},
+			"customers": {
+				"GET /api/v1/customers - List all customers",
+				"GET /api/v1/customers/:id - Get customer details",
+				"POST /api/v1/customers - Create new customer",
+				"PUT /api/v1/customers/:id - Update customer",
+				"DELETE /api/v1/customers/:id - Delete customer",
+			},
+			"admins": {
+				"GET /api/v1/admins - List all admins",
+				"GET /api/v1/admins/:id - Get admin details",
+				"POST /api/v1/admins - Create new admin",
+				"PUT /api/v1/admins/:id - Update admin",
+				"DELETE /api/v1/admins/:id - Delete admin",
+			},
+			"cart": {
+				"POST /api/v1/cart - Add item to cart",
+				"GET /api/v1/cart/:customerId - Get customer cart",
+				"PUT /api/v1/cart/:id - Update cart item",
+				"DELETE /api/v1/cart/:id - Remove cart item",
+			},
+			"reviews": {
+				"POST /api/v1/reviews - Create review",
+				"GET /api/v1/reviews/product/:productId - List product reviews",
+				"DELETE /api/v1/reviews/:id - Delete review",
+			},
+			"search": {
+				"GET /api/v1/search?q=... - Search products",
+			},
+			"logistics": {
+				"POST /api/v1/shipments - Create shipment",
+				"GET /api/v1/shipments/:id - Get shipment status",
+			},
+			"promotions": {
+				"POST /api/v1/promotions - Create promotion",
+				"GET /api/v1/promotions - List promotions",
+				"DELETE /api/v1/promotions/:id - Delete promotion",
 			},
 		}
 

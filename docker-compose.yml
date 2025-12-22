@@ -14,6 +14,11 @@ services:
       - PAYMENT_SERVICE_URL=http://payment-service:8084
       - CUSTOMER_SERVICE_URL=http://customer-service:8085
       - ADMIN_SERVICE_URL=http://admin-service:8086
+      - CART_SERVICE_URL=http://cart-service:8087
+      - REVIEW_SERVICE_URL=http://review-rating-service:8088
+      - SEARCH_SERVICE_URL=http://search-service:8089
+      - LOGISTICS_SERVICE_URL=http://logistics-service:8090
+      - PROMOTION_SERVICE_URL=http://promotion-service:8091
     depends_on:
       - product-service
       - order-service
@@ -22,6 +27,11 @@ services:
       - payment-service
       - customer-service
       - admin-service
+      - cart-service
+      - review-rating-service
+      - search-service
+      - logistics-service
+      - promotion-service
     restart: on-failure
     networks:
       - microservices-network
@@ -126,6 +136,101 @@ services:
       - DB_NAME=admins_db
     depends_on:
       - admin-db
+    restart: on-failure
+    networks:
+      - microservices-network
+
+  # Cart Service
+  cart-service:
+    build:
+      context: .
+      dockerfile: ./cart-service/Dockerfile
+    ports:
+      - "8087:8087"
+    environment:
+      - DB_HOST=cart-db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=canh177
+      - DB_NAME=cart_db
+    depends_on:
+      - cart-db
+    restart: on-failure
+    networks:
+      - microservices-network
+
+  # Review & Rating Service
+  review-rating-service:
+    build:
+      context: .
+      dockerfile: ./review-rating-service/Dockerfile
+    ports:
+      - "8088:8088"
+    environment:
+      - DB_HOST=review-db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=canh177
+      - DB_NAME=reviews_db
+    depends_on:
+      - review-db
+    restart: on-failure
+    networks:
+      - microservices-network
+
+  # Search Service
+  search-service:
+    build:
+      context: .
+      dockerfile: ./search-service/Dockerfile
+    ports:
+      - "8089:8089"
+    environment:
+      - DB_HOST=search-db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=canh177
+      - DB_NAME=search_db
+    depends_on:
+      - search-db
+    restart: on-failure
+    networks:
+      - microservices-network
+
+  # Logistics Service
+  logistics-service:
+    build:
+      context: .
+      dockerfile: ./logistics-service/Dockerfile
+    ports:
+      - "8090:8090"
+    environment:
+      - DB_HOST=logistics-db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=canh177
+      - DB_NAME=logistics_db
+    depends_on:
+      - logistics-db
+    restart: on-failure
+    networks:
+      - microservices-network
+
+  # Promotion Service
+  promotion-service:
+    build:
+      context: .
+      dockerfile: ./promotion-service/Dockerfile
+    ports:
+      - "8091:8091"
+    environment:
+      - DB_HOST=promotion-db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=canh177
+      - DB_NAME=promotions_db
+    depends_on:
+      - promotion-db
     restart: on-failure
     networks:
       - microservices-network
@@ -317,6 +422,76 @@ services:
     networks:
       - microservices-network
 
+  # Cart Database
+  cart-db:
+    image: postgres:16-alpine
+    ports:
+      - "5439:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=canh177
+      - POSTGRES_DB=cart_db
+    volumes:
+      - cart-db-data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+
+  # Review Database
+  review-db:
+    image: postgres:16-alpine
+    ports:
+      - "5440:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=canh177
+      - POSTGRES_DB=reviews_db
+    volumes:
+      - review-db-data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+
+  # Search Database
+  search-db:
+    image: postgres:16-alpine
+    ports:
+      - "5441:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=canh177
+      - POSTGRES_DB=search_db
+    volumes:
+      - search-db-data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+
+  # Logistics Database
+  logistics-db:
+    image: postgres:16-alpine
+    ports:
+      - "5442:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=canh177
+      - POSTGRES_DB=logistics_db
+    volumes:
+      - logistics-db-data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+
+  # Promotion Database
+  promotion-db:
+    image: postgres:16-alpine
+    ports:
+      - "5443:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=canh177
+      - POSTGRES_DB=promotions_db
+    volumes:
+      - promotion-db-data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+
 volumes:
   product-db-data:
   order-db-data:
@@ -325,6 +500,11 @@ volumes:
   payment-db-data:
   customer-db-data:
   admin-db-data:
+  cart-db-data:
+  review-db-data:
+  search-db-data:
+  logistics-db-data:
+  promotion-db-data:
   prometheus_data:
   grafana_data:
   redis_data:

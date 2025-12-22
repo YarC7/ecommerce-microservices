@@ -351,6 +351,11 @@ Each service provides Swagger documentation for its API endpoints. Access the do
 - Notification Service: http://localhost:8083/swagger/index.html
 - Customer Service: http://localhost:8085/swagger/index.html
 - Admin Service: http://localhost:8086/swagger/index.html
+- Cart Service: http://localhost:8087/swagger/index.html
+- Review & Rating Service: http://localhost:8088/swagger/index.html
+- Search Service: http://localhost:8089/swagger/index.html
+- Logistics Service: http://localhost:8090/swagger/index.html
+- Promotion Service: http://localhost:8091/swagger/index.html
 
 Generate Swagger docs for new services:
 
