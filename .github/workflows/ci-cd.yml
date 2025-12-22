@@ -250,7 +250,8 @@ jobs:
     needs: [build, k8s-test]
     if: github.ref == 'refs/heads/main'
     environment: production
-
+    env:
+      KUBECONFIG: ${{ github.workspace }}/kubeconfig.yaml
     steps:
       - uses: actions/checkout@v4
 
@@ -261,10 +262,8 @@ jobs:
 
       - name: Configure kubectl
         run: |
-          # Tạo thư mục .kube và ghi đè cấu hình vào file config mặc định
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
-          chmod 600 ~/.kube/config
+          # Ghi nội dung secret vào file được định nghĩa trong env KUBECONFIG
+          echo "${{ secrets.KUBE_CONFIG }}" > $KUBECONFIG
 
       - name: Update deployment images
         run: |
