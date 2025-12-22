@@ -103,13 +103,19 @@ jobs:
         with:
           version: "v1.25.0"
 
-      - name: Build images and load into kind
+      - name: Build and Load Images
         env:
           SHA: ${{ github.sha }}
         run: |
-          # Your existing build and 'kind load' logic remains the same
-          # Note: The cluster name must match the one defined above (pr-cluster)
-      - name: Deploy test manifests
+          services=(api-gateway product-service order-service inventory-service notification-service payment-service)
+          for svc in "${services[@]}"; do
+            echo "Building $svc..."
+            docker build -f $svc/Dockerfile -t ${svc}:pr-${SHA} .
+            # CRITICAL: We use 'pr-cluster' to match the cluster_name in helm/kind-action
+            kind load docker-image ${svc}:pr-${SHA} --name pr-cluster
+          done
+
+      - name: Deploy and Verify
         env:
           SHA: ${{ github.sha }}
         run: |
@@ -133,13 +139,14 @@ jobs:
                 containers:
                 - name: ${svc}
                   image: ${svc}:pr-${SHA}
+                  imagePullPolicy: IfNotPresent  # This tells K8s NOT to pull from the internet
                   ports:
                   - containerPort: 80
           EOF
-                    done
-                    for svc in api-gateway product-service order-service inventory-service notification-service payment-service; do
-                      kubectl rollout status -n pr-test deployment/${svc} --timeout=2m || (kubectl describe -n pr-test deployment/${svc}; kubectl logs -n pr-test -l app=${svc} --tail=100; exit 1)
-                    done
+                  done
+                  for svc in api-gateway product-service order-service inventory-service notification-service payment-service; do
+                    kubectl rollout status -n pr-test deployment/${svc} --timeout=2m
+                  done
 
                 - name: Cleanup kind cluster
                   if: always()
@@ -175,7 +182,10 @@ jobs:
     permissions:
       contents: read
       packages: write
-
+    strategy:
+      matrix:
+        # This will spin up 6 parallel runners!
+        service: [api-gateway, product-service, order-service, inventory-service, notification-service, payment-service]
     steps:
       - uses: actions/checkout@v4
 
@@ -189,53 +199,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push API Gateway
+      - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./api-gateway/Dockerfile
+          file: ./${{ matrix.service }}/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api-gateway:${{ github.sha }}
-
-      - name: Build and push Product Service
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./product-service/Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/product-service:${{ github.sha }}
-
-      - name: Build and push Order Service
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./order-service/Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/order-service:${{ github.sha }}
-
-      - name: Build and push Inventory Service
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./inventory-service/Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/inventory-service:${{ github.sha }}
-
-      - name: Build and push Notification Service
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./notification-service/Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/notification-service:${{ github.sha }}
-
-      - name: Build and push Payment Service
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./payment-service/Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/payment-service:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}:${{ github.sha }}
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
