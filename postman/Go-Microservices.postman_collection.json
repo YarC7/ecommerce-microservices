@@ -399,13 +399,575 @@
                     }
                 }
             ]
-        }
-    ],
-    "variable": [
+        },
         {
-            "key": "base_url",
-            "value": "http://localhost:8000",
-            "type": "string"
-        }
-    ]
-}
+            "name": "Customers",
+            "item": [
+                {
+                    "name": "List customers",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/customers",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "customers"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get customer by id",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/customers/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "customers",
+                                ":id"
+                            ]
+                        },
+                        "description": "Replace :id with a real customer id (e.g., 1)"
+                    }
+                },
+                {
+                    "name": "Create customer",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/customers",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "customers"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update customer",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Updated Name\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/customers/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "customers",
+                                ":id"
+                            ]
+                        },
+                        "description": "Replace :id with the customer id to update"
+                    }
+                },
+                {
+                    "name": "Delete customer",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/customers/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "customers",
+                                ":id"
+                            ]
+                        },
+                        "description": "Replace :id with the customer id to delete"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Admins",
+            "item": [
+                {
+                    "name": "List admins",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admins",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "admins"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get admin by id",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admins/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "admins",
+                                ":id"
+                            ]
+                        },
+                        "description": "Replace :id with an admin id"
+                    }
+                },
+                {
+                    "name": "Create admin",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"admin1\",\n  \"role\": \"super\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admins",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "admins"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update admin",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"role\": \"moderator\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admins/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "admins",
+                                ":id"
+                            ]
+                        },
+                        "description": "Replace :id with the admin id to update"
+                    }
+                },
+                {
+                    "name": "Delete admin",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admins/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "admins",
+                                ":id"
+                            ]
+                        },
+                        "description": "Replace :id with the admin id to delete"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Cart",
+            "item": [
+                {
+                    "name": "Add to cart",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"customerId\": 1,\n  \"productId\": 2,\n  \"quantity\": 3\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/cart",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "cart"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get cart",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/cart/:customerId",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "cart",
+                                ":customerId"
+                            ]
+                        },
+                        "description": "Replace :customerId with the customer id"
+                    }
+                },
+                {
+                    "name": "Update cart item",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"quantity\": 5\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/cart/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "cart",
+                                ":id"
+                            ]
+                        },
+                        "description": "Replace :id with the cart item id"
+                    }
+                },
+                {
+                    "name": "Delete cart item",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/cart/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "cart",
+                                ":id"
+                            ]
+                        },
+                        "description": "Replace :id with the cart item id"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Reviews",
+            "item": [
+                {
+                    "name": "Create review",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"productId\": 1,\n  \"customerId\": 1,\n  \"rating\": 5,\n  \"comment\": \"Great!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/reviews",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "reviews"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "List reviews by product",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/reviews/product/:productId",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "reviews",
+                                "product",
+                                ":productId"
+                            ]
+                        },
+                        "description": "Replace :productId with the product id"
+                    }
+                },
+                {
+                    "name": "Delete review",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/reviews/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "reviews",
+                                ":id"
+                            ]
+                        },
+                        "description": "Replace :id with the review id"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Search",
+            "item": [
+                {
+                    "name": "Search products",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/search?q=phone",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "search"
+                            ],
+                            "query": [
+                                {
+                                    "key": "q",
+                                    "value": "phone"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Logistics",
+                "item": [
+                    {
+                        "name": "Create shipment",
+                        "request": {
+                            "method": "POST",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": {
+                                "mode": "raw",
+                                "raw": "{\n  \"orderId\": 123,\n  \"address\": \"123 Main St\"\n}"
+                            },
+                            "url": {
+                                "raw": "{{base_url}}/api/v1/shipments",
+                                "host": [
+                                    "{{base_url}}"
+                                ],
+                                "path": [
+                                    "api",
+                                    "v1",
+                                    "shipments"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "name": "Get shipment",
+                        "request": {
+                            "method": "GET",
+                            "header": [],
+                            "url": {
+                                "raw": "{{base_url}}/api/v1/shipments/:id",
+                                "host": [
+                                    "{{base_url}}"
+                                ],
+                                "path": [
+                                    "api",
+                                    "v1",
+                                    "shipments",
+                                    ":id"
+                                ]
+                            },
+                            "description": "Replace :id with the shipment id"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Promotions",
+                "item": [
+                    {
+                        "name": "Create promotion",
+                        "request": {
+                            "method": "POST",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": {
+                                "mode": "raw",
+                                "raw": "{\n  \"code\": \"SUMMER21\",\n  \"discount\": 15.0\n}"
+                            },
+                            "url": {
+                                "raw": "{{base_url}}/api/v1/promotions",
+                                "host": [
+                                    "{{base_url}}"
+                                ],
+                                "path": [
+                                    "api",
+                                    "v1",
+                                    "promotions"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "name": "List promotions",
+                        "request": {
+                            "method": "GET",
+                            "header": [],
+                            "url": {
+                                "raw": "{{base_url}}/api/v1/promotions",
+                                "host": [
+                                    "{{base_url}}"
+                                ],
+                                "path": [
+                                    "api",
+                                    "v1",
+                                    "promotions"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "name": "Delete promotion",
+                        "request": {
+                            "method": "DELETE",
+                            "header": [],
+                            "url": {
+                                "raw": "{{base_url}}/api/v1/promotions/:id",
+                                "host": [
+                                    "{{base_url}}"
+                                ],
+                                "path": [
+                                    "api",
+                                    "v1",
+                                    "promotions",
+                                    ":id"
+                                ]
+                            },
+                            "description": "Replace :id with the promotion id"
+                        }
+                    }
+                ]
+            }
+        ],
+        "variable": [
+            {
+                "key": "base_url",
+                "value": "http://localhost:8000",
+                "type": "string"
+            }
+        ]
+    }
