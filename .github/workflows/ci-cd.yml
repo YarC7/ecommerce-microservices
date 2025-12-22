@@ -119,6 +119,8 @@ jobs:
         env:
           SHA: ${{ github.sha }}
         run: |
+          kubectl get pods -n pr-test
+          kubectl describe pod -l app=api-gateway -n pr-test
           kubectl create namespace pr-test || true
           for svc in api-gateway product-service order-service inventory-service notification-service payment-service; do
             cat <<EOF | kubectl apply -n pr-test -f -
