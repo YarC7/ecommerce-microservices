@@ -5,6 +5,7 @@
 ## Project Highlights
 
 ✨ **Key Features**:
+
 - Microservices-based architecture with independent scaling
 - Real-time order processing with Redis caching
 - Asynchronous communication via RabbitMQ
@@ -14,6 +15,7 @@
 - Advanced monitoring with Prometheus & Grafana
 
 🛠️ **Tech Stack**:
+
 - Go + Gin Framework
 - PostgreSQL + Redis
 - RabbitMQ
@@ -22,12 +24,14 @@
 - GitHub Actions
 
 📈 **Performance**:
+
 - Handles 1000+ orders/minute
 - Sub-100ms response times
 - 99.9% uptime SLA
 - Automatic scaling & failover
 
 🔒 **Security**:
+
 - Container image scanning
 - Automated security testing
 - Secret management
@@ -59,6 +63,7 @@ The project consists of the following microservices:
 ## Key Features
 
 ### API Gateway
+
 - Single entry point for all client requests
 - Intelligent request routing
 - CORS support
@@ -66,17 +71,21 @@ The project consists of the following microservices:
 - Health check endpoints
 
 ### Order Service
+
 - **Redis Caching**:
+
   - Order caching with 30-minute TTL
   - Automatic cache invalidation
   - Cache-aside pattern implementation
 
 - **RabbitMQ Message Queue**:
+
   - Event publishing for new orders
   - Topic exchange for order events
   - Asynchronous notification processing
 
 - **Batch Processing**:
+
   - Parallel processing of multiple orders
   - Configurable worker pool
   - Timeout handling
@@ -90,11 +99,13 @@ The project consists of the following microservices:
   - Error handling and logging
 
 ### Database
+
 - PostgreSQL for each service
 - Separate databases for isolation
 - Optimized queries and indexing
 
 ### Monitoring
+
 - Prometheus metrics
 - Grafana dashboards
 - Service health monitoring
@@ -103,17 +114,18 @@ The project consists of the following microservices:
 ## Installation and Running
 
 1. Clone repository:
-\`\`\`bash
-git clone <repository-url>
-cd go-microservices
-\`\`\`
+   \`\`\`bash
+   git clone <repository-url>
+   cd go-microservices
+   \`\`\`
 
 2. Run services with Docker Compose:
-\`\`\`bash
-docker-compose up --build
-\`\`\`
+   \`\`\`bash
+   docker-compose up --build
+   \`\`\`
 
 3. Check services:
+
 - API Gateway: http://localhost:8000
 - Product Service: http://localhost:8080
 - Order Service: http://localhost:8081
@@ -125,6 +137,7 @@ docker-compose up --build
 ## API Endpoints
 
 ### API Gateway (http://localhost:8000)
+
 - `/api/v1/products/*`: Product service endpoints
 - `/api/v1/orders/*`: Order service endpoints
 - `/api/v1/inventory/*`: Inventory service endpoints
@@ -133,6 +146,7 @@ docker-compose up --build
 - `/docs`: API documentation
 
 ### Order Service (http://localhost:8081)
+
 - `POST /orders`: Create new order
   - Inventory check
   - Cache result
@@ -152,6 +166,7 @@ docker-compose up --build
 ## Batch Processing
 
 ### Features
+
 - Parallel processing of large order volumes
 - Configurable worker pool size (default: 10 workers)
 - Timeout handling (default: 30 seconds)
@@ -159,41 +174,44 @@ docker-compose up --build
 - Performance optimization
 
 ### Example Request
+
 \`\`\`bash
 curl -X POST http://localhost:8081/orders/batch \
-  -H "Content-Type: application/json" \
-  -d '[
-    {
-      "product_id": 1,
-      "customer_id": 1,
-      "quantity": 2
-    },
-    {
-      "product_id": 2,
-      "customer_id": 1,
-      "quantity": 1
-    }
-    // ... more orders ...
-  ]'
+ -H "Content-Type: application/json" \
+ -d '[
+{
+"product_id": 1,
+"customer_id": 1,
+"quantity": 2
+},
+{
+"product_id": 2,
+"customer_id": 1,
+"quantity": 1
+}
+// ... more orders ...
+]'
 \`\`\`
 
 ### Example Response
+
 \`\`\`json
 {
-  "total_orders": 1000,
-  "successful": 990,
-  "failed": 10,
-  "failed_orders": [
-    {
-      "order_id": 5,
-      "error": "Product not available"
-    }
-  ],
-  "processing_time": "30s"
+"total_orders": 1000,
+"successful": 990,
+"failed": 10,
+"failed_orders": [
+{
+"order_id": 5,
+"error": "Product not available"
+}
+],
+"processing_time": "30s"
 }
 \`\`\`
 
 ### Performance
+
 - Processing capacity: Up to 1000 orders/minute
 - Average processing time: ~100ms per order
 - Concurrent processing: 10 orders at a time
@@ -202,6 +220,7 @@ curl -X POST http://localhost:8081/orders/batch \
 ## Monitoring
 
 ### Prometheus Metrics
+
 - Order processing time
 - Cache hit/miss ratio
 - Message queue performance
@@ -209,6 +228,7 @@ curl -X POST http://localhost:8081/orders/batch \
 - Service health metrics
 
 ### Grafana Dashboards
+
 - Service performance monitoring
 - Error rate tracking
 - Resource utilization
@@ -217,6 +237,7 @@ curl -X POST http://localhost:8081/orders/batch \
 ## Environment Variables
 
 ### Order Service
+
 - `DB_HOST`: Database host
 - `DB_PORT`: Database port
 - `DB_USER`: Database user
@@ -246,6 +267,7 @@ MIT License
 The project implements comprehensive testing strategies across different levels:
 
 ### Unit Tests (`/order-service/tests`)
+
 - **Controller Tests**
   - Mock external services (Inventory, Notification)
   - Test business logic
@@ -259,6 +281,7 @@ The project implements comprehensive testing strategies across different levels:
     ```
 
 ### Integration Tests (`/order-service/tests/integration`)
+
 - **End-to-End Flow Tests**
   - Test complete order creation flow
   - Test batch processing
@@ -272,6 +295,7 @@ The project implements comprehensive testing strategies across different levels:
     ```
 
 ### Test Coverage
+
 - Coverage reports in HTML format
 - Track code coverage metrics
 - Identify untested code paths
@@ -298,6 +322,7 @@ make clean
 ```
 
 ### Test Environment
+
 - Separate test database
 - Isolated Redis instance (DB 1)
 - Test-specific RabbitMQ queues
@@ -305,6 +330,7 @@ make clean
 - Cleanup after tests
 
 ### Test Features
+
 - Table-driven tests
 - Mock implementations
 - Parallel test execution
@@ -323,8 +349,19 @@ Each service provides Swagger documentation for its API endpoints. Access the do
 - Product Service: http://localhost:8080/swagger/index.html
 - Inventory Service: http://localhost:8082/swagger/index.html
 - Notification Service: http://localhost:8083/swagger/index.html
+- Customer Service: http://localhost:8085/swagger/index.html
+- Admin Service: http://localhost:8086/swagger/index.html
+
+Generate Swagger docs for new services:
+
+- Install swag locally: `go install github.com/swaggo/swag/cmd/swag@latest`
+- From the service folder run: `swag init -g main.go -o docs`
+- Or with the helper container (writes to the repo):
+
+  `docker-compose run --rm swagger-gen sh -c "cd customer-service && apk add --no-cache go git && go install github.com/swaggo/swag/cmd/swag@latest && swag init -g main.go -o docs"`
 
 The Swagger documentation includes:
+
 - Detailed endpoint descriptions
 - Request/response schemas
 - Authentication requirements
@@ -349,11 +386,13 @@ A comprehensive Postman collection is available for testing the APIs:
 ## CI/CD Pipeline
 
 ### Overview
+
 Project sử dụng GitHub Actions để tự động hóa quy trình CI/CD, bao gồm testing, security scanning và deployment.
 
 ### Pipeline Stages
 
 #### 1. Test Stage
+
 - Chạy unit tests và integration tests
 - Tạo báo cáo test coverage
 - Upload kết quả test lên Codecov
@@ -363,34 +402,41 @@ Project sử dụng GitHub Actions để tự động hóa quy trình CI/CD, bao
   - RabbitMQ 3
 
 #### 2. Security Scan
+
 - Trivy: Quét lỗ hổng bảo mật trong dependencies và container images
 - gosec: Phân tích mã nguồn Go để tìm các vấn đề bảo mật
 - Chặn pipeline nếu phát hiện lỗ hổng nghiêm trọng
 
 #### 3. Build Stage
+
 - Build Docker images cho tất cả services
 - Push images lên GitHub Container Registry (ghcr.io)
 - Tag images với commit SHA
 
 #### 4. Deploy Stage
+
 - Tự động deploy khi merge vào nhánh main
 - Deploy lên Kubernetes cluster
 - Verify deployment status
 
 ### Trigger Events
+
 Pipeline được kích hoạt khi:
+
 - Push code vào nhánh main
 - Tạo Pull Request vào nhánh main
 
 ### Setup Requirements
 
 1. GitHub Repository Configuration:
+
    ```bash
    # Add required secrets
    KUBE_CONFIG: Base64 encoded kubeconfig file
    ```
 
 2. Enable GitHub Container Registry:
+
    - Go to Settings > Packages
    - Enable GitHub Container Registry
 
@@ -402,10 +448,12 @@ Pipeline được kích hoạt khi:
 ### Monitoring Pipeline
 
 1. View Pipeline Status:
+
    - Go to repository's Actions tab
    - Select workflow run to view details
 
 2. Test Results:
+
    - Test reports available as artifacts
    - Coverage reports on Codecov
 
@@ -416,11 +464,13 @@ Pipeline được kích hoạt khi:
 ### Best Practices
 
 1. Commit Guidelines:
+
    - Viết commit message rõ ràng
    - Mỗi commit chỉ nên chứa một thay đổi logic
    - Tham khảo [Conventional Commits](https://www.conventionalcommits.org/)
 
 2. Branch Strategy:
+
    - Develop trên feature branches
    - Tạo Pull Request để merge vào main
    - Đảm bảo CI pass trước khi merge
@@ -433,12 +483,15 @@ Pipeline được kích hoạt khi:
 ### Troubleshooting
 
 Common Issues:
+
 1. Test Failures:
+
    - Check test logs in Actions tab
    - Verify test environment configuration
    - Check service dependencies
 
 2. Build Failures:
+
    - Verify Dockerfile configurations
    - Check resource limits
    - Validate image tags
@@ -451,6 +504,7 @@ Common Issues:
 ### Continuous Improvement
 
 1. Metrics to Monitor:
+
    - Build time
    - Test coverage
    - Deployment frequency
@@ -461,4 +515,4 @@ Common Issues:
    - Update dependencies
    - Review and optimize pipeline
    - Update documentation
-   - Security patches 
+   - Security patches
