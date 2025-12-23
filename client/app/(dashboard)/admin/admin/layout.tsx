@@ -14,7 +14,7 @@ export default async function AdminLayout({
 
   const now = Math.floor(Date.now() / 1000);
   if (!payload || (payload.exp && payload.exp <= now)) {
-    redirect("/auth/login");
+    redirect("/admin/login");
   }
 
   const roles: string[] = payload?.roles ?? [];

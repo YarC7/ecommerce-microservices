@@ -32,8 +32,11 @@ export function proxy(req: NextRequest) {
   const now = Math.floor(Date.now() / 1000);
 
   if (!payload || (payload.exp && payload.exp <= now)) {
-    // Redirect to login (preserve attempted path)
-    const loginUrl = new URL("/auth/login", req.url);
+    // Redirect to appropriate login based on path
+    const loginPath = pathname.startsWith("/admin")
+      ? "/admin/login"
+      : "/customer/login";
+    const loginUrl = new URL(loginPath, req.url);
     loginUrl.searchParams.set("from", pathname);
     return NextResponse.redirect(loginUrl);
   }

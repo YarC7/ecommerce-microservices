@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Home,
   ShieldCheck,
@@ -57,6 +58,13 @@ export default function MainShell({
   user?: { sub?: string };
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
+  // Determine logout URL based on current path
+  const logoutUrl = pathname.startsWith("/admin")
+    ? "/admin/logout"
+    : "/customer/logout";
+
   const userInitials = user?.sub
     ? user.sub
       .split(" ")
@@ -124,7 +132,7 @@ export default function MainShell({
                       asChild
                       className="group transition-all duration-200 hover:bg-gradient-to-r hover:from-indigo-500/10 hover:to-purple-500/10 dark:hover:from-indigo-500/20 dark:hover:to-purple-500/20 rounded-lg px-3 py-2.5"
                     >
-                      <Link href="/auth/logout" className="flex items-center gap-3">
+                      <Link href={logoutUrl} className="flex items-center gap-3">
                         <LogOut className="h-5 w-5 text-slate-600 dark:text-slate-400 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-200" />
                         <span className="font-medium text-slate-700 dark:text-slate-300 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-200">
                           Logout
@@ -232,7 +240,7 @@ export default function MainShell({
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href="/auth/logout" className="cursor-pointer">
+                      <Link href={logoutUrl} className="cursor-pointer">
                         <LogOut className="mr-2 h-4 w-4" />
                         Logout
                       </Link>
