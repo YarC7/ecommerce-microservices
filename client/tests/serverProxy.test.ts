@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { forwardRequest } from "../server/lib/serverProxy";
 
 describe("serverProxy.forwardRequest", () => {
-  let originalFetch: any;
+  let originalFetch: typeof global.fetch | undefined;
 
   beforeEach(() => {
     originalFetch = global.fetch;
@@ -13,12 +13,11 @@ describe("serverProxy.forwardRequest", () => {
   });
 
   it("retries after 401 by calling refresh and then retrying", async () => {
-    const calls: any[] = [];
-    global.fetch = vi.fn(async (url: string, opts: any) => {
+    const calls: Array<{ url: string; opts: unknown }> = [];
+    global.fetch = vi.fn(async (url: string, opts?: unknown) => {
       calls.push({ url, opts });
       if (url.endsWith("/api/v1/auth/refresh")) {
-        // verify body contains refresh_token
-        const cl = opts?.body ? await opts.body.text?.() : undefined;
+        // refresh endpoint called
         return new Response(JSON.stringify({ ok: true }), {
           status: 200,
           headers: { "content-type": "application/json" },
@@ -32,7 +31,7 @@ describe("serverProxy.forwardRequest", () => {
         status: 200,
         headers: { "content-type": "application/json" },
       });
-    });
+    }) as unknown as typeof global.fetch;
 
     const resp = await forwardRequest({
       method: "GET",
@@ -44,10 +43,9 @@ describe("serverProxy.forwardRequest", () => {
     expect(resp.status).toBe(200);
     expect(JSON.parse(text)).toEqual({ hello: "world" });
     // ensure refresh was called
+    // ensure refresh was called by inspecting our recorded calls
     expect(
-      (global.fetch as any).mock.calls.some((c: any) =>
-        c[0].endsWith("/api/v1/auth/refresh")
-      )
+      calls.some((c) => (c.url as string).endsWith("/api/v1/auth/refresh"))
     ).toBe(true);
   });
 });

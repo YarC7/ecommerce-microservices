@@ -6,7 +6,7 @@ export default function AdminPage() {
   let obj = null;
   try {
     obj = user ? JSON.parse(user) : null;
-  } catch (e) {
+  } catch {
     obj = null;
   }
   const roles = obj?.roles || null;

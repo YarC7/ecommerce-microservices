@@ -1,7 +1,7 @@
 export type ForwardOptions = {
   method?: string;
   url: string;
-  body?: any;
+  body?: unknown;
   headers?: Record<string, string>;
   accessToken?: string | null;
   refreshToken?: string | null;
@@ -39,7 +39,7 @@ export async function forwardRequest(opts: ForwardOptions): Promise<Response> {
           return retryResp;
         }
       }
-    } catch (e) {
+    } catch {
       // ignore and fallthrough
     }
   }

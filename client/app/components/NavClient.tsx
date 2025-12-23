@@ -1,23 +1,27 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
+import Link from "next/link";
+
+type User = { user_id: number | string | null; roles?: unknown } | null;
+
+function parseUserFromCookie(): User {
+  const raw = document.cookie
+    .split("; ")
+    .find((c) => c.startsWith("user="))
+    ?.split("=")[1];
+  if (!raw) return null;
+  try {
+    return JSON.parse(decodeURIComponent(raw));
+  } catch {
+    return null;
+  }
+}
 
 export default function NavClient() {
-  const [user, setUser] = useState<any>(null);
-
-  useEffect(() => {
-    const raw = document.cookie
-      .split("; ")
-      .find((c) => c.startsWith("user="))
-      ?.split("=")[1];
-    if (raw) {
-      try {
-        setUser(JSON.parse(decodeURIComponent(raw)));
-      } catch (e) {
-        setUser(null);
-      }
-    }
-  }, []);
+  const [user] = React.useState<User>(() =>
+    typeof window !== "undefined" ? parseUserFromCookie() : null
+  );
 
   return (
     <nav
@@ -28,18 +32,18 @@ export default function NavClient() {
         borderBottom: "1px solid #eee",
       }}
     >
-      <a href="/">Home</a>
-      <a href="/products">Products</a>
+      <Link href="/">Home</Link>
+      <Link href="/products">Products</Link>
       {user ? (
         <>
-          <a href="/cart">Cart</a>
-          <a href="/profile">Profile</a>
+          <Link href="/cart">Cart</Link>
+          <Link href="/profile">Profile</Link>
           {user.roles && JSON.stringify(user.roles).includes("admin") && (
-            <a href="/admin">Admin</a>
+            <Link href="/admin">Admin</Link>
           )}
         </>
       ) : (
-        <a href="/login">Login</a>
+        <Link href="/login">Login</Link>
       )}
     </nav>
   );

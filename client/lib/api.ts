@@ -1,7 +1,7 @@
 type ApiOptions = {
   method?: string;
   headers?: Record<string, string>;
-  body?: any;
+  body?: unknown;
 };
 
 export async function apiFetch(path: string, opts: ApiOptions = {}) {

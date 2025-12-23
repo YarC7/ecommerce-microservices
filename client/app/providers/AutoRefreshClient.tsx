@@ -11,7 +11,7 @@ export default function AutoRefreshClient() {
     async function refresh() {
       try {
         await fetch("/api/auth/refresh", { method: "POST" });
-      } catch (e) {
+      } catch {
         // ignore
       }
     }

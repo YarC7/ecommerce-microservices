@@ -4,8 +4,9 @@ import { NextResponse } from "next/server";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
-export async function POST(req: NextRequest) {
-  const refreshToken = cookies().get("refresh_token")?.value;
+export async function POST(_req: NextRequest) {
+  const cookieStore = await cookies();
+  const refreshToken = cookieStore.get("refresh_token")?.value;
   if (!refreshToken)
     return NextResponse.json({ error: "no refresh token" }, { status: 401 });
 
@@ -26,14 +27,14 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
 
-  cookies().set({
+  cookieStore.set({
     name: "access_token",
     value: access,
     httpOnly: true,
     path: "/",
     maxAge: 15 * 60,
   });
-  cookies().set({
+  cookieStore.set({
     name: "refresh_token",
     value: refreshNew,
     httpOnly: true,
@@ -51,14 +52,14 @@ export async function POST(req: NextRequest) {
       user_id: claims?.user_id || null,
       roles: claims?.roles || null,
     });
-    cookies().set({
+    cookieStore.set({
       name: "user",
       value: userVal,
       httpOnly: false,
       path: "/",
       maxAge: 15 * 60,
     });
-  } catch (e) {
+  } catch {
     // ignore
   }
 

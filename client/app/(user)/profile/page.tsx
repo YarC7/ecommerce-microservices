@@ -7,7 +7,7 @@ export default function ProfilePage() {
   let userObj = null;
   try {
     userObj = user ? JSON.parse(user) : null;
-  } catch (e) {
+  } catch {
     userObj = null;
   }
 

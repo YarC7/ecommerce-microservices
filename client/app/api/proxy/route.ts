@@ -7,8 +7,9 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
 export async function POST(req: NextRequest) {
   const { method, path, headers, body } = await req.json();
-  const access = cookies().get("access_token")?.value ?? null;
-  const refresh = cookies().get("refresh_token")?.value ?? null;
+  const cookieStore = await cookies();
+  const access = cookieStore.get("access_token")?.value ?? null;
+  const refresh = cookieStore.get("refresh_token")?.value ?? null;
 
   // forward request; will attempt refresh internally on 401 using refresh token
   const url = API_BASE + path;

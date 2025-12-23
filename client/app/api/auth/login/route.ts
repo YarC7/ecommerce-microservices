@@ -4,15 +4,17 @@ import { NextResponse } from "next/server";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
-function parseJwt(token: string | null) {
+type Claims = { user_id?: number | string; roles?: unknown } | null;
+
+function parseJwt(token: string | null): Claims {
   if (!token) return null;
   try {
     const parts = token.split(".");
     if (parts.length !== 3) return null;
     const payload = parts[1];
     const decoded = Buffer.from(payload, "base64").toString("utf8");
-    return JSON.parse(decoded);
-  } catch (e) {
+    return JSON.parse(decoded) as Claims;
+  } catch {
     return null;
   }
 }
@@ -43,17 +45,16 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
 
-  const secure = process.env.NODE_ENV === "production";
-
   // Set cookies (server-side)
-  cookies().set({
+  const cookieStore = await cookies();
+  cookieStore.set({
     name: "access_token",
     value: access,
     httpOnly: true,
     path: "/",
     maxAge: 15 * 60,
   });
-  cookies().set({
+  cookieStore.set({
     name: "refresh_token",
     value: refresh,
     httpOnly: true,
@@ -62,12 +63,12 @@ export async function POST(req: NextRequest) {
   });
 
   // set readable user cookie for client (not httpOnly)
-  const claims: any = parseJwt(access);
+  const claims = parseJwt(access);
   const userVal = JSON.stringify({
     user_id: claims?.user_id || null,
     roles: claims?.roles || null,
   });
-  cookies().set({
+  cookieStore.set({
     name: "user",
     value: userVal,
     httpOnly: false,
