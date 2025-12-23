@@ -13,7 +13,7 @@ export default function AdminLogoutPage() {
             } catch (error) {
                 console.error("Logout error:", error);
             } finally {
-                router.push("/");
+                router.push("/admin/auth/login");
             }
         }
         logout();

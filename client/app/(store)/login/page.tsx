@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Mail, Lock, Loader2, ShoppingBag, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ export default function CustomerLoginPage() {
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const from = searchParams.get("from") || "/";
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -32,7 +34,7 @@ export default function CustomerLoginPage() {
                 throw new Error(data.error || "Login failed");
             }
 
-            router.push("/customer");
+            router.push(from);
         } catch (err) {
             setError((err as Error).message);
         } finally {

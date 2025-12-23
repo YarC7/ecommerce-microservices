@@ -4,7 +4,6 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Home,
   ShieldCheck,
   User,
   ShoppingCart,
@@ -62,8 +61,10 @@ export default function MainShell({
 
   // Determine logout URL based on current path
   const logoutUrl = pathname.startsWith("/admin")
-    ? "/admin/logout"
-    : "/customer/logout";
+    ? "/admin/auth/logout"
+    : pathname.startsWith("/vendor")
+      ? "/vendor/auth/logout"
+      : "/login"; // Customer logout redirects to login
 
   const userInitials = user?.sub
     ? user.sub
