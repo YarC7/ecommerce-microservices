@@ -98,6 +98,36 @@ This document is the canonical memory and orientation file for the Go-Microservi
 
 ---
 
+## 🧠 Memory Context — Frontend Auth & Authorization (recent changes)
+
+- Summary: Added UI-level auth and authorization guards using Next.js App Router group layouts and an Edge middleware to provide fast redirects and scoped role checks for the frontend. These are UX protections only: back-end services **must** continue verifying tokens and enforcing authorization.
+
+- What changed (key files):
+
+  - `client/app/(main)/layout.tsx` — Server-side group layout: reads `access_token` from cookies, decodes payload to check expiry and redirect to `/auth/login` for unauthenticated users.
+  - `client/app/(main)/(admin)/layout.tsx` — Admin group layout: enforces `roles` include `admin`; redirects non-admins to `/unauthorized`.
+  - `client/middleware.ts` — Edge middleware: matches `/admin/*`, `/customer/*`, `/order/*`, `/cart/*` and redirects unauthenticated users to `/auth/login` (preserves attempted path) and non-admins to `/unauthorized`.
+  - `client/lib/decodeJwt.ts` — Lightweight JWT payload decoder used for UI checks (no signature verification).
+  - `client/app/(auth)/login/page.tsx` and `client/app/(auth)/logout/page.tsx` — Simple client pages for login/logout flows that interact with `api/auth/*` endpoints.
+  - `client/app/unauthorized/page.tsx` — Simple UX page for unauthorized access.
+
+- ESLint change: `client/eslint.config.mjs` sets `@typescript-eslint/no-explicit-any` to `"warn"` to ease migration where `any` appears (warnings, not errors).
+
+- Security note: The JWT decoding on the frontend is a convenience for UX (redirects, UI decisions). **Do not** rely on it for real access control — always verify the JWT signature and enforce scopes/roles on the server-side API/gateway.
+
+- Tests & verification:
+
+  - Add integration/e2e tests for the redirect / refresh behavior (visiting protected routes should redirect to login, admin route should return unauthorized for non-admins).
+  - Local smoke test: `cd client && pnpm dev` → visit protected pages and verify redirects; use real auth-service endpoints or mock cookies for tests.
+
+- How to extend:
+  - To protect additional frontend routes, update the `matcher` in `client/middleware.ts` and/or add new group layouts that perform required checks.
+  - To implement automatic token refresh on the frontend (rotation), add a server-side proxy refresh endpoint and a client retry mechanism in `client/app/api/proxy/route.ts`.
+
+---
+
+---
+
 ## 📌 Current State Snapshot (summary)
 
 - Auth implemented (register/login/refresh/logout/revoke), session rotation in place.
