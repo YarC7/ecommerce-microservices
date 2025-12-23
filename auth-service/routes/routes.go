@@ -14,5 +14,7 @@ func SetupRoutes(r *gin.Engine, ac *controller.AuthController) {
 		r.POST("/login", ac.Login)
 		r.POST("/refresh", ac.Refresh)
 		r.POST("/logout", ac.Logout)
+		r.POST("/revoke", ac.Revoke)
+		r.GET("/sessions", ac.ListSessions)
 	}
 }

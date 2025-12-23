@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"go-microservices/auth-service/model"
@@ -200,6 +202,112 @@ func (ac *AuthController) Logout(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "logged out"})
+}
+
+// Revoke request
+type RevokeRequest struct {
+	RefreshToken string `json:"refresh_token,omitempty"`
+	SessionID    *int   `json:"session_id,omitempty"`
+}
+
+// Revoke allows users to revoke their refresh token or admins to revoke any session by id
+func (ac *AuthController) Revoke(c *gin.Context) {
+	var req RevokeRequest
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// If session_id provided -> admin-only operation
+	if req.SessionID != nil {
+		roles := c.GetHeader("X-User-Roles")
+		if roles == "" || !strings.Contains(roles, "admin") {
+			c.JSON(http.StatusForbidden, gin.H{"error": "admin role required to revoke by session_id"})
+			return
+		}
+
+		_, err := ac.DB.Exec("UPDATE sessions SET revoked = TRUE WHERE id = $1", *req.SessionID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "session revoked"})
+		return
+	}
+
+	// Otherwise, require refresh token to revoke own session
+	if req.RefreshToken == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "refresh_token or session_id required"})
+		return
+	}
+
+	session, err := ac.findSessionByRefreshToken(req.RefreshToken)
+	if err != nil {
+		// idempotent: return success even if token not found
+		c.JSON(http.StatusOK, gin.H{"message": "revoked"})
+		return
+	}
+
+	_, err = ac.DB.Exec("UPDATE sessions SET revoked = TRUE WHERE id = $1", session.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "revoked"})
+}
+
+// List sessions response type
+type SessionInfo struct {
+	ID        int       `json:"id"`
+	UserID    int       `json:"user_id"`
+	Email     string    `json:"email"`
+	ExpiresAt time.Time `json:"expires_at"`
+	Revoked   bool      `json:"revoked"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// ListSessions returns all sessions (admin-only) with optional ?user_id= filter
+func (ac *AuthController) ListSessions(c *gin.Context) {
+	roles := c.GetHeader("X-User-Roles")
+	if roles == "" || !strings.Contains(roles, "admin") {
+		c.JSON(http.StatusForbidden, gin.H{"error": "admin role required"})
+		return
+	}
+
+	userIDStr := c.Query("user_id")
+	var rows *sql.Rows
+	var err error
+	if userIDStr != "" {
+		uid, parseErr := strconv.Atoi(userIDStr)
+		if parseErr != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user_id"})
+			return
+		}
+		rows, err = ac.DB.Query(`SELECT s.id, s.user_id, u.email, s.expires_at, s.revoked, s.created_at
+		FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.user_id = $1`, uid)
+	} else {
+		rows, err = ac.DB.Query(`SELECT s.id, s.user_id, u.email, s.expires_at, s.revoked, s.created_at
+		FROM sessions s JOIN users u ON u.id = s.user_id ORDER BY s.created_at DESC`)
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	var out []SessionInfo
+	for rows.Next() {
+		var si SessionInfo
+		if err := rows.Scan(&si.ID, &si.UserID, &si.Email, &si.ExpiresAt, &si.Revoked, &si.CreatedAt); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		out = append(out, si)
+	}
+
+	c.JSON(http.StatusOK, out)
 }
 
 // Helper: create JWT access token

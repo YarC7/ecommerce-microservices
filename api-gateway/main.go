@@ -102,7 +102,12 @@ func main() {
 	apiV1.Any("/search/*path", createReverseProxy(searchServiceURL, "/search"))
 	apiV1.Any("/logistics/*path", createReverseProxy(logisticsServiceURL, "/shipments"))
 	apiV1.Any("/promotions/*path", createReverseProxy(promotionServiceURL, "/promotions"))
-	// Auth routes (no auth required)
+	// Auth routes
+	// - Revoke: authenticated users may revoke their own refresh token; admins may revoke by session_id
+	apiV1.POST("/auth/revoke", jwtMiddleware(), createReverseProxy(authServiceURL, "/auth/revoke"))
+	// - Sessions: admin-only
+	apiV1.GET("/auth/sessions", jwtMiddleware(), adminRequired(), createReverseProxy(authServiceURL, "/auth/sessions"))
+	// Fallback proxy for other auth routes (login/register/refresh/logout)
 	apiV1.Any("/auth/*path", createReverseProxy(authServiceURL, "/auth"))
 
 	// Documentation endpoint (moved to /api to avoid clashing with the SPA root)
