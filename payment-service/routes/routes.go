@@ -2,6 +2,7 @@ package routes
 
 import (
 	"go-microservices/payment-service/controller"
+	"go-microservices/payment-service/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,9 +15,9 @@ func SetupRoutes(router *gin.Engine, paymentController *controller.PaymentContro
 	// Payment routes
 	paymentRoutes := router.Group("/payments")
 	{
-		paymentRoutes.POST("/", paymentController.CreatePayment)            // Create payment intent
-		paymentRoutes.POST("/confirm", paymentController.ConfirmPayment)    // Confirm payment
-		paymentRoutes.GET("/:id", paymentController.GetPayment)            // Get payment by ID
-		paymentRoutes.GET("/order/:orderId", paymentController.GetPaymentsByOrder) // Get payments by order ID
+		paymentRoutes.POST("/", middleware.RequireAuth(), paymentController.CreatePayment)            // Create payment intent
+		paymentRoutes.POST("/confirm", middleware.RequireAuth(), paymentController.ConfirmPayment)    // Confirm payment
+		paymentRoutes.GET("/:id", middleware.RequireAuth(), paymentController.GetPayment)            // Get payment by ID
+		paymentRoutes.GET("/order/:orderId", middleware.RequireAuth(), paymentController.GetPaymentsByOrder) // Get payments by order ID
 	}
 }

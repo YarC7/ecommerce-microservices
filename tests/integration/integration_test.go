@@ -144,6 +144,66 @@ func TestEndToEnd_Flow(t *testing.T) {
 		t.Fatalf("get cart failed: status=%d body=%s", gres.StatusCode, string(b))
 	}
 
+	// 6) Seed inventory for productId=1
+	inv := map[string]interface{}{"product_id": 1, "quantity": 10, "sku": "sku-1", "location": "local"}
+	invb, _ := json.Marshal(inv)
+	invReq, _ := http.NewRequest("POST", "http://localhost:8000/api/v1/inventory", bytes.NewReader(invb))
+	invReq.Header.Set("Content-Type", "application/json")
+	invRes, err := http.DefaultClient.Do(invReq)
+	if err != nil {
+		t.Fatalf("create inventory request failed: %v", err)
+	}
+	if invRes.StatusCode != http.StatusCreated {
+		b, _ := ioutil.ReadAll(invRes.Body)
+		t.Fatalf("create inventory failed: status=%d body=%s", invRes.StatusCode, string(b))
+	}
+
+	// 7) Create an order (auth required)
+	order := map[string]interface{}{"product_id": 1, "quantity": 2}
+	ob, _ := json.Marshal(order)
+	oreq, _ := http.NewRequest("POST", "http://localhost:8000/api/v1/orders", bytes.NewReader(ob))
+	oreq.Header.Set("Content-Type", "application/json")
+	oreq.Header.Set("Authorization", "Bearer "+loginResp.AccessToken)
+	ores, err := http.DefaultClient.Do(oreq)
+	if err != nil {
+		t.Fatalf("create order request failed: %v", err)
+	}
+	if ores.StatusCode != http.StatusCreated {
+		b, _ := ioutil.ReadAll(ores.Body)
+		t.Fatalf("create order failed: status=%d body=%s", ores.StatusCode, string(b))
+	}
+	var orderRes struct{ ID int `json:"id"` }
+	if err := json.NewDecoder(ores.Body).Decode(&orderRes); err != nil {
+		t.Fatalf("failed to decode order response: %v", err)
+	}
+
+	// 8) Get order and verify owner
+	goreq, _ := http.NewRequest("GET", fmt.Sprintf("http://localhost:8000/api/v1/orders/%d", orderRes.ID), nil)
+	goreq.Header.Set("Authorization", "Bearer "+loginResp.AccessToken)
+	gores, err := http.DefaultClient.Do(goreq)
+	if err != nil {
+		t.Fatalf("get order request failed: %v", err)
+	}
+	if gores.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(gores.Body)
+		t.Fatalf("get order failed: status=%d body=%s", gores.StatusCode, string(b))
+	}
+
+	// 9) Update order status to completed
+	statusReq := map[string]string{"status": "completed"}
+	statusB, _ := json.Marshal(statusReq)
+	statusReqHTTP, _ := http.NewRequest("PATCH", fmt.Sprintf("http://localhost:8000/api/v1/orders/%d/status", orderRes.ID), bytes.NewReader(statusB))
+	statusReqHTTP.Header.Set("Content-Type", "application/json")
+	statusReqHTTP.Header.Set("Authorization", "Bearer "+loginResp.AccessToken)
+	statusRes, err := http.DefaultClient.Do(statusReqHTTP)
+	if err != nil {
+		t.Fatalf("update status request failed: %v", err)
+	}
+	if statusRes.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(statusRes.Body)
+		t.Fatalf("update status failed: status=%d body=%s", statusRes.StatusCode, string(b))
+	}
+
 	// Success
 	t.Log("Integration flow completed successfully")
 }

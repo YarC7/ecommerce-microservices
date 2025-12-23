@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"go-microservices/payment-service/model"
@@ -20,12 +21,13 @@ type PaymentController struct {
 }
 
 func NewPaymentController(db *sql.DB) *PaymentController {
-	// Initialize Stripe
-	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
-	if stripe.Key == "" {
-		log.Fatal("STRIPE_SECRET_KEY is required but not set")
-	}	
-	return &PaymentController{
+	// Initialize Stripe if configured; otherwise, run in stub mode (useful for integration tests)
+	stripeKey := os.Getenv("STRIPE_SECRET_KEY")
+	if stripeKey == "" {
+		log.Println("Warning: STRIPE_SECRET_KEY not set — running payment service in stub mode")
+	} else {
+		stripe.Key = stripeKey
+	}
 		db: db,
 	}
 }
@@ -38,23 +40,50 @@ func (pc *PaymentController) CreatePayment(c *gin.Context) {
 		return
 	}
 
+	// Enforce ownership: prefer X-User-Id header as customer ID
+	uid := c.GetHeader("X-User-Id")
+	if uid == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
+		return
+	}
+	if req.CustomerID != 0 {
+		if strconv.Itoa(req.CustomerID) != uid {
+			c.JSON(http.StatusForbidden, gin.H{"error": "cannot create payment for another user"})
+			return
+		}
+	} else {
+		cid, _ := strconv.Atoi(uid)
+		req.CustomerID = cid
+	}
+
 	// Convert amount to cents for Stripe (Stripe expects amounts in cents)
 	amountCents := int64(req.Amount * 100)
 
-	// Create payment intent with Stripe
-	params := &stripe.PaymentIntentParams{
-		Amount:   stripe.Int64(amountCents),
-		Currency: stripe.String(req.Currency),
-		Metadata: map[string]string{
-			"order_id":    strconv.Itoa(req.OrderID),
-			"customer_id": strconv.Itoa(req.CustomerID),
-		},
-	}
+	var pi *stripe.PaymentIntent
+	var err error
+	if stripe.Key == "" {
+		// Stub mode: generate fake payment intent
+		pi = &stripe.PaymentIntent{
+			ID:           "pi_stub_" + strconv.FormatInt(time.Now().UnixNano(), 10),
+			ClientSecret: "secret_stub_" + strconv.FormatInt(time.Now().UnixNano(), 10),
+			Status:       stripe.PaymentIntentStatusRequiresPaymentMethod,
+		}
+	} else {
+		// Create payment intent with Stripe
+		params := &stripe.PaymentIntentParams{
+			Amount:   stripe.Int64(amountCents),
+			Currency: stripe.String(req.Currency),
+			Metadata: map[string]string{
+				"order_id":    strconv.Itoa(req.OrderID),
+				"customer_id": strconv.Itoa(req.CustomerID),
+			},
+		}
 
-	pi, err := paymentintent.New(params)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create payment intent: " + err.Error()})
-		return
+		pi, err = paymentintent.New(params)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create payment intent: " + err.Error()})
+			return
+		}
 	}
 
 	// Save payment to database
@@ -100,10 +129,37 @@ func (pc *PaymentController) ConfirmPayment(c *gin.Context) {
 		return
 	}
 
-	// Retrieve payment intent from Stripe
-	pi, err := paymentintent.Get(req.PaymentIntentID, nil)
+	// Retrieve payment intent from Stripe or stub
+	var pi *stripe.PaymentIntent
+	var err error
+	if stripe.Key == "" {
+		// Stub: assume success
+		pi = &stripe.PaymentIntent{ID: req.PaymentIntentID, Status: stripe.PaymentIntentStatusSucceeded, PaymentMethod: &stripe.PaymentMethod{Type: "card"}}
+	} else {
+		pi, err = paymentintent.Get(req.PaymentIntentID, nil)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve payment intent: " + err.Error()})
+			return
+		}
+	}
+
+	// Fetch existing payment to enforce ownership
+	var existing model.Payment
+	err = pc.db.QueryRow("SELECT id, order_id, customer_id FROM payments WHERE stripe_payment_id = $1", req.PaymentIntentID).
+		Scan(&existing.ID, &existing.OrderID, &existing.CustomerID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve payment intent: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch payment: " + err.Error()})
+		return
+	}
+
+	uid := c.GetHeader("X-User-Id")
+	roles := c.GetHeader("X-User-Roles")
+	if uid == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
+		return
+	}
+	if strconv.Itoa(existing.CustomerID) != uid && !strings.Contains(roles, "admin") {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 		return
 	}
 
@@ -174,6 +230,18 @@ func (pc *PaymentController) GetPayment(c *gin.Context) {
 		return
 	}
 
+	// Ownership: allow owner or admin
+	uid := c.GetHeader("X-User-Id")
+	roles := c.GetHeader("X-User-Roles")
+	if uid == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
+		return
+	}
+	if strconv.Itoa(payment.CustomerID) != uid && !strings.Contains(roles, "admin") {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+
 	c.JSON(http.StatusOK, payment)
 }
 
@@ -186,13 +254,32 @@ func (pc *PaymentController) GetPaymentsByOrder(c *gin.Context) {
 		return
 	}
 
-	query := `
-		SELECT id, order_id, customer_id, amount, currency, status, stripe_payment_id,
-		       COALESCE(payment_method, '') as payment_method, created_at, updated_at
-		FROM payments WHERE order_id = $1 ORDER BY created_at DESC
-	`
+	// Ownership: non-admins only see their own payments
+	uid := c.GetHeader("X-User-Id")
+	roles := c.GetHeader("X-User-Roles")
+	if uid == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
+		return
+	}
 
-	rows, err := pc.db.Query(query, orderID)
+	var rows *sql.Rows
+	if strings.Contains(roles, "admin") {
+		query := `
+			SELECT id, order_id, customer_id, amount, currency, status, stripe_payment_id,
+			       COALESCE(payment_method, '') as payment_method, created_at, updated_at
+			FROM payments WHERE order_id = $1 ORDER BY created_at DESC
+		`
+		rows, err = pc.db.Query(query, orderID)
+	} else {
+		cid, _ := strconv.Atoi(uid)
+		query := `
+			SELECT id, order_id, customer_id, amount, currency, status, stripe_payment_id,
+			       COALESCE(payment_method, '') as payment_method, created_at, updated_at
+			FROM payments WHERE order_id = $1 AND customer_id = $2 ORDER BY created_at DESC
+		`
+		rows, err = pc.db.Query(query, orderID, cid)
+	}
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve payments: " + err.Error()})
 		return

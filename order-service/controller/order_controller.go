@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"go-microservices/order-service/cache"
@@ -158,6 +159,24 @@ func (oc *OrderController) CreateOrder(c *gin.Context) {
 		return
 	}
 
+	// Enforce ownership: prefer X-User-Id header as the customer ID
+	uid := c.GetHeader("X-User-Id")
+	if uid == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
+		return
+	}
+	// If client provided CustomerID and it doesn't match header, reject
+	if order.CustomerID != 0 {
+		if strconv.Itoa(order.CustomerID) != uid {
+			c.JSON(http.StatusForbidden, gin.H{"error": "cannot create order for another user"})
+			return
+		}
+	} else {
+		// Set customer ID from header
+		cid, _ := strconv.Atoi(uid)
+		order.CustomerID = cid
+	}
+
 	// Check inventory availability using circuit breaker
 	available, err := oc.InventoryService.CheckAvailability(order.ProductID, order.Quantity)
 	if err != nil {
@@ -215,6 +234,22 @@ func (oc *OrderController) CreateOrderWithPayment(c *gin.Context) {
 	if err := c.ShouldBindJSON(&orderWithPayment); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	// Enforce ownership like CreateOrder
+	uid := c.GetHeader("X-User-Id")
+	if uid == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
+		return
+	}
+	if orderWithPayment.CustomerID != 0 {
+		if strconv.Itoa(orderWithPayment.CustomerID) != uid {
+			c.JSON(http.StatusForbidden, gin.H{"error": "cannot create order for another user"})
+			return
+		}
+	} else {
+		cid, _ := strconv.Atoi(uid)
+		orderWithPayment.CustomerID = cid
 	}
 
 	// Check inventory availability using circuit breaker
@@ -326,6 +361,17 @@ func (oc *OrderController) GetOrder(c *gin.Context) {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get order: " + err.Error()})
 				return
 			}
+			// Enforce ownership: allow owner or admin
+			uid := c.GetHeader("X-User-Id")
+			roles := c.GetHeader("X-User-Roles")
+			if uid == "" {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
+				return
+			}
+			if strconv.Itoa(order.CustomerID) != uid && !strings.Contains(roles, "admin") {
+				c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+				return
+			}
 			c.JSON(http.StatusOK, order)
 			return
 		}
@@ -372,6 +418,18 @@ func (oc *OrderController) UpdateOrder(c *gin.Context) {
 	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Enforce ownership: only owner or admin can modify
+	uid := c.GetHeader("X-User-Id")
+	roles := c.GetHeader("X-User-Roles")
+	if uid == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
+		return
+	}
+	if strconv.Itoa(existingOrder.CustomerID) != uid && !strings.Contains(roles, "admin") {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 		return
 	}
 
@@ -426,6 +484,18 @@ func (oc *OrderController) DeleteOrder(c *gin.Context) {
 		return
 	}
 
+	// Enforce ownership: only owner or admin can delete
+	uid := c.GetHeader("X-User-Id")
+	roles := c.GetHeader("X-User-Roles")
+	if uid == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
+		return
+	}
+	if strconv.Itoa(order.CustomerID) != uid && !strings.Contains(roles, "admin") {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+
 	// Delete the order
 	result, err := oc.DB.Exec("DELETE FROM orders WHERE id = $1", id)
 	if err != nil {
@@ -476,6 +546,18 @@ func (oc *OrderController) UpdateOrderStatus(c *gin.Context) {
 	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Enforce ownership: only owner or admin can update status
+	uid := c.GetHeader("X-User-Id")
+	roles := c.GetHeader("X-User-Roles")
+	if uid == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
+		return
+	}
+	if strconv.Itoa(order.CustomerID) != uid && !strings.Contains(roles, "admin") {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 		return
 	}
 
