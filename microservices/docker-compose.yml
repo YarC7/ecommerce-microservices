@@ -38,6 +38,22 @@ services:
     networks:
       - microservices-network
 
+  # Next.js Frontend Client
+  client:
+    build:
+      context: ../client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - API_URL=http://api-gateway:8000
+      - NEXT_PUBLIC_API_DEBUG=false
+    depends_on:
+      - api-gateway
+    restart: on-failure
+    networks:
+      - microservices-network
+
   # Redis Cache
   redis:
     image: redis:7-alpine
@@ -335,7 +351,7 @@ services:
   grafana:
     image: grafana/grafana-oss:latest
     ports:
-      - "3000:3000"
+      - "1707:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin

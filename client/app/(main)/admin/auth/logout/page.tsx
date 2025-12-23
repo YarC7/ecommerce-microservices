@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Shield } from "lucide-react";
+import { apiClient } from "@/lib/api-client";
 
 export default function AdminLogoutPage() {
     const router = useRouter();
@@ -9,7 +10,7 @@ export default function AdminLogoutPage() {
     useEffect(() => {
         async function logout() {
             try {
-                await fetch("/api/v1/auth/logout", { method: "POST" });
+                await apiClient.auth.logout();
             } catch (error) {
                 console.error("Logout error:", error);
             } finally {

@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { apiClient } from "@/lib/api-client";
+import { UserType } from "@/lib/api-types";
 
 export default function CustomerLoginPage() {
     const [email, setEmail] = useState("");
@@ -23,17 +25,7 @@ export default function CustomerLoginPage() {
         setIsLoading(true);
 
         try {
-            const res = await fetch("/api/v1/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password, type: "customer" }),
-            });
-
-            if (!res.ok) {
-                const data = await res.json().catch(() => ({}));
-                throw new Error(data.error || "Login failed");
-            }
-
+            await apiClient.auth.login(email, password, UserType.CUSTOMER);
             router.push(from);
         } catch (err) {
             setError((err as Error).message);
