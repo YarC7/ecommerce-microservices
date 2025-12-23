@@ -1,523 +1,472 @@
-# Go Microservices Project
+# Microservices E-Commerce Platform
 
-🚀 A modern, high-performance e-commerce platform built with microservices architecture using Go. Designed for scalability, resilience, and maintainability.
+🚀 A modern, production-ready e-commerce platform built with microservices architecture. Features a Go backend with 12+ microservices and a Next.js frontend with advanced API client capabilities.
 
-## Project Highlights
+## 🌟 Project Highlights
 
-✨ **Key Features**:
+### Key Features
 
-- Microservices-based architecture with independent scaling
-- Real-time order processing with Redis caching
-- Asynchronous communication via RabbitMQ
-- Comprehensive API documentation with Swagger
-- Automated CI/CD pipeline with GitHub Actions
-- Container orchestration with Kubernetes
-- Advanced monitoring with Prometheus & Grafana
+- **Microservices Architecture** - 12+ independent, scalable services
+- **Modern Frontend** - Next.js with TypeScript and shadcn/ui
+- **Advanced API Client** - Retry logic, caching, token refresh
+- **Real-time Processing** - Redis caching + RabbitMQ messaging
+- **Production Infrastructure** - Nginx reverse proxy, health monitoring
+- **Automated CI/CD** - GitHub Actions with security scanning
+- **Comprehensive Monitoring** - Prometheus + Grafana dashboards
 
-🛠️ **Tech Stack**:
+### Tech Stack
 
+**Backend:**
 - Go + Gin Framework
-- PostgreSQL + Redis
-- RabbitMQ
-- Docker & Kubernetes
-- Prometheus & Grafana
-- GitHub Actions
+- PostgreSQL (12 databases)
+- Redis (caching)
+- RabbitMQ (messaging)
 
-📈 **Performance**:
+**Frontend:**
+- Next.js 16 + React 19
+- TypeScript
+- TailwindCSS + shadcn/ui
+- Advanced API client with retry/caching
 
-- Handles 1000+ orders/minute
-- Sub-100ms response times
-- 99.9% uptime SLA
-- Automatic scaling & failover
-
-🔒 **Security**:
-
-- Container image scanning
-- Automated security testing
-- Secret management
-- Regular dependency updates
-
-## Architecture
-
-The project consists of the following microservices:
-
-- **API Gateway** (Port: 8000): Single entry point for all client requests
-- **Product Service** (Port: 8080): Product management
-- **Order Service** (Port: 8081): Order processing with caching and message queue
-- **Inventory Service** (Port: 8082): Inventory management
-- **Notification Service** (Port: 8083): Notification handling
-
-### Technologies Used
-
-- **Go**: Primary programming language
-- **Gin**: Web framework
-- **PostgreSQL**: Primary database
-- **Redis**: Caching layer
-- **RabbitMQ**: Message queue
-- **Docker & Docker Compose**: Containerization and orchestration
-- **Prometheus & Grafana**: Monitoring and metrics
-- **Circuit Breaker**: Fault tolerance handling
-- **Swagger/OpenAPI**: API Documentation
-- **Postman**: API Testing
-
-## Key Features
-
-### API Gateway
-
-- Single entry point for all client requests
-- Intelligent request routing
-- CORS support
-- Automatic API documentation
-- Health check endpoints
-
-### Order Service
-
-- **Redis Caching**:
-
-  - Order caching with 30-minute TTL
-  - Automatic cache invalidation
-  - Cache-aside pattern implementation
-
-- **RabbitMQ Message Queue**:
-
-  - Event publishing for new orders
-  - Topic exchange for order events
-  - Asynchronous notification processing
-
-- **Batch Processing**:
-
-  - Parallel processing of multiple orders
-  - Configurable worker pool
-  - Timeout handling
-  - Success/failure tracking
-  - Performance optimization for bulk operations
-
-- **Resilience**:
-  - Circuit breaker for service calls
-  - Retry mechanism
-  - Async notification handling
-  - Error handling and logging
-
-### Database
-
-- PostgreSQL for each service
-- Separate databases for isolation
-- Optimized queries and indexing
-
-### Monitoring
-
-- Prometheus metrics
-- Grafana dashboards
-- Service health monitoring
-- Performance metrics
-
-## Installation and Running
-
-1. Clone repository:
-   \`\`\`bash
-   git clone <repository-url>
-   cd go-microservices
-   \`\`\`
-
-2. Run services with Docker Compose:
-   \`\`\`bash
-   docker-compose up --build
-   \`\`\`
-
-3. Check services:
-
-- API Gateway: http://localhost:8000
-- Product Service: http://localhost:8080
-- Order Service: http://localhost:8081
-- Inventory Service: http://localhost:8082
-- Notification Service: http://localhost:8083
-- Prometheus: http://localhost:9090
-- Grafana: http://localhost:3000
-
-## API Endpoints
-
-### API Gateway (http://localhost:8000)
-
-- `/api/v1/products/*`: Product service endpoints
-- `/api/v1/orders/*`: Order service endpoints
-- `/api/v1/inventory/*`: Inventory service endpoints
-- `/api/v1/notifications/*`: Notification service endpoints
-- `/health`: Health check endpoint
-- `/docs`: API documentation
-
-### Order Service (http://localhost:8081)
-
-- `POST /orders`: Create new order
-  - Inventory check
-  - Cache result
-  - Publish event to RabbitMQ
-  - Async notification
-- `POST /orders/batch`: Process multiple orders in parallel
-  - Concurrent processing using worker pool
-  - Configurable number of workers
-  - Timeout handling
-  - Detailed success/failure tracking
-- `GET /orders/:id`: Get order details (with Redis cache)
-- `GET /orders`: List all orders
-- `PUT /orders/:id`: Update order
-- `DELETE /orders/:id`: Delete order
-- `PATCH /orders/:id/status`: Update order status
-
-## Batch Processing
-
-### Features
-
-- Parallel processing of large order volumes
-- Configurable worker pool size (default: 10 workers)
-- Timeout handling (default: 30 seconds)
-- Detailed success/failure tracking
-- Performance optimization
-
-### Example Request
-
-\`\`\`bash
-curl -X POST http://localhost:8081/orders/batch \
- -H "Content-Type: application/json" \
- -d '[
-{
-"product_id": 1,
-"customer_id": 1,
-"quantity": 2
-},
-{
-"product_id": 2,
-"customer_id": 1,
-"quantity": 1
-}
-// ... more orders ...
-]'
-\`\`\`
-
-### Example Response
-
-\`\`\`json
-{
-"total_orders": 1000,
-"successful": 990,
-"failed": 10,
-"failed_orders": [
-{
-"order_id": 5,
-"error": "Product not available"
-}
-],
-"processing_time": "30s"
-}
-\`\`\`
+**Infrastructure:**
+- Docker + Docker Compose
+- Nginx (reverse proxy)
+- Prometheus + Grafana
+- GitHub Actions CI/CD
 
 ### Performance
 
-- Processing capacity: Up to 1000 orders/minute
-- Average processing time: ~100ms per order
-- Concurrent processing: 10 orders at a time
-- Automatic timeout after 30 seconds
+- 1000+ orders/minute processing capacity
+- Sub-100ms API response times
+- 99.9% uptime SLA
+- Automatic scaling and failover
+- Request retry with exponential backoff
+- Response caching (30-60s TTL)
 
-## Monitoring
+### Security
 
-### Prometheus Metrics
+- JWT authentication with auto-refresh
+- Rate limiting (10 req/s API, 30 req/s app)
+- Security headers (CSP, HSTS, X-Frame-Options)
+- Container image scanning
+- Automated dependency updates
 
-- Order processing time
-- Cache hit/miss ratio
-- Message queue performance
-- Batch processing metrics
-- Service health metrics
+## 📁 Project Structure
 
-### Grafana Dashboards
+```
+Go-Microservices/
+├── client/                    # Next.js Frontend
+│   ├── app/                   # App router pages
+│   ├── components/            # React components (shadcn/ui)
+│   ├── lib/                   # Utilities and API client
+│   │   ├── api-client.ts      # Advanced API client
+│   │   ├── api-types.ts       # TypeScript types
+│   │   └── api-loading-context.tsx
+│   ├── hooks/                 # Custom React hooks
+│   │   └── use-api.ts         # API hooks
+│   └── Dockerfile            # Client container
+├── microservices/            # Go Backend Services
+│   ├── api-gateway/          # API Gateway (Port 8000)
+│   ├── auth-service/         # Authentication (Port 8070)
+│   ├── product-service/      # Products (Port 8080)
+│   ├── order-service/        # Orders (Port 8081)
+│   ├── inventory-service/    # Inventory (Port 8082)
+│   ├── notification-service/ # Notifications (Port 8083)
+│   ├── payment-service/      # Payments (Port 8084)
+│   ├── customer-service/     # Customers (Port 8085)
+│   ├── admin-service/        # Admin (Port 8086)
+│   ├── cart-service/         # Shopping Cart (Port 8087)
+│   ├── review-rating-service/ # Reviews (Port 8088)
+│   ├── search-service/       # Search (Port 8089)
+│   ├── logistics-service/    # Logistics (Port 8090)
+│   ├── promotion-service/    # Promotions (Port 8091)
+│   ├── nginx/                # Reverse proxy config
+│   ├── docker-compose.yml    # Service orchestration
+│   └── healthcheck.sh        # Health monitoring
+└── postman/                  # API test collections
+```
 
-- Service performance monitoring
-- Error rate tracking
-- Resource utilization
-- Business metrics
+## 🚀 Quick Start
 
-## Environment Variables
+### Prerequisites
+
+- Docker & Docker Compose
+- Node.js 20+ (for local frontend development)
+- Go 1.21+ (for local backend development)
+
+### Run Full Stack
+
+```bash
+# Clone repository
+git clone <repository-url>
+cd Go-Microservices
+
+# Start all services (backend + frontend + nginx)
+cd microservices
+docker-compose up --build
+
+# Services will be available at:
+# - Frontend: http://localhost:3000 (via nginx: http://localhost)
+# - API Gateway: http://localhost:8000 (via nginx: http://localhost/api)
+# - Nginx Proxy: http://localhost:80
+# - Prometheus: http://localhost:9090
+# - Grafana: http://localhost:1707
+```
+
+### Development Mode
+
+**Backend Only:**
+```bash
+cd microservices
+docker-compose up api-gateway product-service order-service
+```
+
+**Frontend Only:**
+```bash
+cd client
+npm install
+npm run dev
+# Frontend at http://localhost:3000
+```
+
+### Health Check
+
+```bash
+cd microservices
+./healthcheck.sh
+
+# Or check services manually
+docker-compose ps
+```
+
+## 🎯 Architecture
+
+### Microservices Overview
+
+| Service | Port | Description |
+|---------|------|-------------|
+| **nginx** | 80/443 | Reverse proxy, load balancing |
+| **Next.js Client** | 3000 | Frontend application |
+| **API Gateway** | 8000 | Single entry point, routing |
+| **Auth Service** | 8070 | Authentication, JWT tokens |
+| **Product Service** | 8080 | Product management |
+| **Order Service** | 8081 | Order processing, caching |
+| **Inventory Service** | 8082 | Stock management |
+| **Notification Service** | 8083 | Email/SMS notifications |
+| **Payment Service** | 8084 | Payment processing |
+| **Customer Service** | 8085 | Customer profiles |
+| **Admin Service** | 8086 | Admin operations |
+| **Cart Service** | 8087 | Shopping cart |
+| **Review Service** | 8088 | Product reviews |
+| **Search Service** | 8089 | Product search |
+| **Logistics Service** | 8090 | Shipping, tracking |
+| **Promotion Service** | 8091 | Discounts, coupons |
+
+### Communication Flow
+
+```
+User → Nginx → Next.js Client
+              ↓
+User → Nginx → API Gateway → Microservices
+                             ↓
+                      PostgreSQL / Redis / RabbitMQ
+```
+
+## 🔧 Frontend Features
+
+### Advanced API Client
+
+**Located at:** `client/lib/api-client.ts`
+
+Features:
+- **Exponential Backoff Retry** - 1s → 2s → 4s → 8s on failure
+- **Automatic Token Refresh** - Seamless re-authentication on 401
+- **Response Caching** - In-memory cache with configurable TTL
+- **Request Cancellation** - AbortController support
+- **Loading States** - React Context for global loading management
+- **TypeScript** - Full type safety
+
+Example usage:
+```typescript
+import  { apiClient } from '@/lib/api-client';
+
+// Products (cached for 30s)
+const products = await apiClient.products.list();
+
+// Orders
+const order = await apiClient.orders.create({ productId, quantity });
+
+// Cart
+await apiClient.cart.addItem(productId, 1);
+
+// With React hooks
+import { useApi } from '@/hooks/use-api';
+
+const { data, loading, error } = useApi(
+  () => apiClient.products.list(),
+  { immediate: true }
+);
+```
+
+### Authentication
+
+**User Types:**
+- **Customers** - `/login`
+- **Admins** - `/admin/auth/login`
+- **Vendors** - `/vendor/auth/login`
+
+Features:
+- JWT token-based authentication
+- HTTP-only cookies
+- Automatic token refresh
+- Role-based access control
+
+## 🛠️ Backend Features
 
 ### Order Service
 
-- `DB_HOST`: Database host
-- `DB_PORT`: Database port
-- `DB_USER`: Database user
-- `DB_PASSWORD`: Database password
-- `DB_NAME`: Database name
-- `REDIS_HOST`: Redis host
-- `RABBITMQ_HOST`: RabbitMQ host
-- `INVENTORY_SERVICE_URL`: Inventory service URL
-- `NOTIFICATION_SERVICE_URL`: Notification service URL
-- `WORKER_POOL_SIZE`: Number of workers for batch processing
-- `BATCH_TIMEOUT`: Timeout for batch processing
+**Caching with Redis:**
+- 30-minute TTL for orders
+- Automatic cache invalidation
+- Cache-aside pattern
 
-## Contributing
+**Message Queue:**
+- RabbitMQ for async processing
+- Event publishing for new orders
+- Topic exchange pattern
 
-1. Fork repository
-2. Create feature branch
-3. Commit changes
-4. Push to branch
-5. Create Pull Request
+**Batch Processing:**
+- Parallel order processing
+- Configurable worker pool (10 workers)
+- Timeout handling (30s)
+- Performance: 1000+ orders/minute
 
-## License
+### Circuit Breaker
 
-MIT License
+- Fault tolerance for service calls
+- Automatic retry mechanism
+- Graceful degradation
 
-## Testing
+## 🔒 Security
 
-The project implements comprehensive testing strategies across different levels:
+### Frontend
+- XSS protection
+- CSRF prevention
+- Rate limiting via nginx
 
-### Unit Tests (`/order-service/tests`)
+### Backend
+- JWT authentication
+- Database isolation
+- Input validation
+- Secure password hashing
 
-- **Controller Tests**
-  - Mock external services (Inventory, Notification)
-  - Test business logic
-  - Test error handling
-  - Test request validation
-  - Example test cases:
-    ```go
-    func TestCreateOrder(t *testing.T)
-    func TestGetOrder(t *testing.T)
-    func TestCreateBatchOrders(t *testing.T)
-    ```
+### Infrastructure
+- Security headers (nginx)
+- Container scanning (Trivy)
+- Code scanning (gosec)
+- Dependency updates
 
-### Integration Tests (`/order-service/tests/integration`)
+## 📊 Monitoring
 
-- **End-to-End Flow Tests**
-  - Test complete order creation flow
-  - Test batch processing
-  - Real Redis integration
-  - Real RabbitMQ integration
-  - Example test cases:
-    ```go
-    func TestOrderFlowIntegration(t *testing.T)
-    func TestCacheIntegration(t *testing.T)
-    func TestMessageQueueIntegration(t *testing.T)
-    ```
+### Prometheus Metrics
 
-### Test Coverage
+- Request/response times
+- Error rates
+- Cache hit/miss ratios
+- DB query performance
+- Queue depth
 
-- Coverage reports in HTML format
-- Track code coverage metrics
-- Identify untested code paths
+### Grafana Dashboards
 
-### Running Tests
+- Service health
+- Business KPIs
+- Resource utilization
+- Custom alerts
 
-Use the provided Makefile commands:
+Access: http://localhost:1707 (admin/admin)
 
+## 🧪 Testing
+
+### Unit Tests
 ```bash
-# Run all tests
-make test
-
-# Run only unit tests
+cd microservices/order-service
 make test-unit
-
-# Run only integration tests
-make test-integration
-
-# Generate coverage report
-make test-coverage
-
-# Clean test cache and coverage files
-make clean
 ```
 
-### Test Environment
+### Integration Tests
+```bash
+make test-integration
+```
 
-- Separate test database
-- Isolated Redis instance (DB 1)
-- Test-specific RabbitMQ queues
-- Mock external services
-- Cleanup after tests
+### Coverage Report
+```bash
+make test-coverage
+```
 
-### Test Features
+### API Testing
+Import Postman collections from `postman/` directory
 
-- Table-driven tests
-- Mock implementations
-- Parallel test execution
-- Timeout handling
-- Cleanup routines
-- Detailed assertions
+## 📖 API Documentation
 
-## API Documentation
+### Swagger UI
 
-### Swagger/OpenAPI Documentation
-
-Each service provides Swagger documentation for its API endpoints. Access the documentation at:
+Each service provides interactive API documentation:
 
 - API Gateway: http://localhost:8000/swagger/index.html
-- Order Service: http://localhost:8081/swagger/index.html
+- Auth Service: http://localhost:8070/swagger/index.html
 - Product Service: http://localhost:8080/swagger/index.html
-- Inventory Service: http://localhost:8082/swagger/index.html
-- Notification Service: http://localhost:8083/swagger/index.html
-- Customer Service: http://localhost:8085/swagger/index.html
-- Admin Service: http://localhost:8086/swagger/index.html
+- Order Service: http://localhost:8081/swagger/index.html
 - Cart Service: http://localhost:8087/swagger/index.html
-- Review & Rating Service: http://localhost:8088/swagger/index.html
-- Search Service: http://localhost:8089/swagger/index.html
-- Logistics Service: http://localhost:8090/swagger/index.html
-- Promotion Service: http://localhost:8091/swagger/index.html
 
-Generate Swagger docs for new services:
+Generate docs:
+```bash
+cd <service-directory>
+swag init -g main.go -o docs
+```
 
-- Install swag locally: `go install github.com/swaggo/swag/cmd/swag@latest`
-- From the service folder run: `swag init -g main.go -o docs`
-- Or with the helper container (writes to the repo):
+## 🌐 Production Deployment
 
-  `docker-compose run --rm swagger-gen sh -c "cd customer-service && apk add --no-cache go git && go install github.com/swaggo/swag/cmd/swag@latest && swag init -g main.go -o docs"`
+### Docker Health Checks
 
-The Swagger documentation includes:
+All services include health checks:
+```yaml
+healthcheck:
+  test: ["CMD", "wget", "--spider", "http://localhost:8000/health"]
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 40s
+```
 
-- Detailed endpoint descriptions
-- Request/response schemas
-- Authentication requirements
-- Example requests
-- Response codes and examples
+### Nginx Configuration
 
-### Postman Collection
+**Features:**
+- Rate limiting
+- Gzip compression
+- Static asset caching (30 days)
+- WebSocket support
+- Security headers
 
-A comprehensive Postman collection is available for testing the APIs:
+**SSL/TLS (Production):**
+Uncomment HTTPS configuration in `nginx/nginx.conf` and add certificates to `nginx/certs/`
 
-1. Import the collection from `order-service/docs/Order_Service.postman_collection.json`
-2. Set up environment variables:
-   - `base_url`: Base URL for the service (e.g., http://localhost:8081)
-3. Use the collection to test:
-   - Create Order
-   - Get Order
-   - Create Batch Orders
-   - Update Order
-   - Delete Order
-   - Update Order Status
+### Environment Variables
 
-## CI/CD Pipeline
+Create `.env` file in `microservices/`:
+```env
+JWT_SECRET=your-secret-key
+STRIPE_SECRET_KEY=your-stripe-key
+```
 
-### Overview
+Frontend `.env.local`:
+```env
+API_URL=http://localhost:8000
+NEXT_PUBLIC_API_DEBUG=false
+```
 
-Project sử dụng GitHub Actions để tự động hóa quy trình CI/CD, bao gồm testing, security scanning và deployment.
+## 🔄 CI/CD Pipeline
 
-### Pipeline Stages
+### GitHub Actions Workflow
 
-#### 1. Test Stage
+**Stages:**
+1. **Test** - Unit + integration tests
+2. **Security Scan** - Trivy + gosec
+3. **Build** - Docker images
+4. **Deploy** - Kubernetes (on main branch)
 
-- Chạy unit tests và integration tests
-- Tạo báo cáo test coverage
-- Upload kết quả test lên Codecov
-- Môi trường test bao gồm:
-  - PostgreSQL 13
-  - Redis 6
-  - RabbitMQ 3
+**Setup:**
+```bash
+# Configure secrets in GitHub:
+Settings → Secrets → Actions
+- KUBE_CONFIG: Base64 kubeconfig
+```
 
-#### 2. Security Scan
+**Triggers:**
+- Push to `main`
+- Pull requests to `main`
 
-- Trivy: Quét lỗ hổng bảo mật trong dependencies và container images
-- gosec: Phân tích mã nguồn Go để tìm các vấn đề bảo mật
-- Chặn pipeline nếu phát hiện lỗ hổng nghiêm trọng
+## 🤝 Contributing
 
-#### 3. Build Stage
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'feat: Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
 
-- Build Docker images cho tất cả services
-- Push images lên GitHub Container Registry (ghcr.io)
-- Tag images với commit SHA
+**Guidelines:**
+- Follow [Conventional Commits](https://www.conventionalcommits.org/)
+- Write tests for new features
+- Update documentation
+- Ensure CI passes
 
-#### 4. Deploy Stage
+## 📝 Environment Setup
 
-- Tự động deploy khi merge vào nhánh main
-- Deploy lên Kubernetes cluster
-- Verify deployment status
+### Backend Development
 
-### Trigger Events
+```bash
+cd microservices/<service-name>
+go mod download
+go run main.go
+```
 
-Pipeline được kích hoạt khi:
+### Frontend Development
 
-- Push code vào nhánh main
-- Tạo Pull Request vào nhánh main
+```bash
+cd client
+npm install
+npm run dev
+```
 
-### Setup Requirements
+### Database Migrations
 
-1. GitHub Repository Configuration:
+```bash
+# Run migrations
+docker-compose exec <service> ./migrate up
 
-   ```bash
-   # Add required secrets
-   KUBE_CONFIG: Base64 encoded kubeconfig file
-   ```
+# Rollback
+docker-compose exec <service> ./migrate down
+```
 
-2. Enable GitHub Container Registry:
+## 🐛 Troubleshooting
 
-   - Go to Settings > Packages
-   - Enable GitHub Container Registry
+### Services Won't Start
+```bash
+# Check logs
+docker-compose logs api-gateway
 
-3. Kubernetes Configuration:
-   - Cluster đã được setup
-   - Deployments cho tất cả services
-   - Correct RBAC permissions
+# Check health
+docker-compose ps
+./healthcheck.sh
+```
 
-### Monitoring Pipeline
+### Frontend Can't Connect to Backend
+- Verify API Gateway is running
+- Check `client/.env.local` configuration
+- Ensure ports 3000 and 8000 are not in use
 
-1. View Pipeline Status:
+### Database Connection Issues
+- Wait for health checks to pass (40s start period)
+- Check database logs: `docker-compose logs product-db`
+- Verify database credentials in docker-compose.yml
 
-   - Go to repository's Actions tab
-   - Select workflow run to view details
+## 📚 Additional Documentation
 
-2. Test Results:
+- [Frontend Integration Guide](client/INTEGRATION.md)
+- [API Client Documentation](client/lib/api-client.ts)
+- [Nginx Configuration](microservices/nginx/nginx.conf)
+- [Docker Compose Reference](microservices/docker-compose.yml)
 
-   - Test reports available as artifacts
-   - Coverage reports on Codecov
+## 📄 License
 
-3. Security Scan Results:
-   - Trivy scan results in workflow logs
-   - gosec analysis results in workflow logs
+MIT License - see LICENSE file for details
 
-### Best Practices
+## 🙏 Acknowledgments
 
-1. Commit Guidelines:
+- Go community
+- Next.js team
+- Docker
+- All open source contributors
 
-   - Viết commit message rõ ràng
-   - Mỗi commit chỉ nên chứa một thay đổi logic
-   - Tham khảo [Conventional Commits](https://www.conventionalcommits.org/)
+---
 
-2. Branch Strategy:
-
-   - Develop trên feature branches
-   - Tạo Pull Request để merge vào main
-   - Đảm bảo CI pass trước khi merge
-
-3. Security:
-   - Không commit secrets vào repository
-   - Regular dependency updates
-   - Review security scan results
-
-### Troubleshooting
-
-Common Issues:
-
-1. Test Failures:
-
-   - Check test logs in Actions tab
-   - Verify test environment configuration
-   - Check service dependencies
-
-2. Build Failures:
-
-   - Verify Dockerfile configurations
-   - Check resource limits
-   - Validate image tags
-
-3. Deploy Failures:
-   - Verify Kubernetes configuration
-   - Check cluster access
-   - Validate deployment manifests
-
-### Continuous Improvement
-
-1. Metrics to Monitor:
-
-   - Build time
-   - Test coverage
-   - Deployment frequency
-   - Failure rate
-   - Mean time to recovery
-
-2. Regular Maintenance:
-   - Update dependencies
-   - Review and optimize pipeline
-   - Update documentation
-   - Security patches
+**Built with ❤️ using Go and Next.js**
