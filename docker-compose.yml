@@ -19,6 +19,7 @@ services:
       - SEARCH_SERVICE_URL=http://search-service:8089
       - LOGISTICS_SERVICE_URL=http://logistics-service:8090
       - PROMOTION_SERVICE_URL=http://promotion-service:8091
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - product-service
       - order-service
@@ -32,6 +33,7 @@ services:
       - search-service
       - logistics-service
       - promotion-service
+      - auth-service
     restart: on-failure
     networks:
       - microservices-network
@@ -117,6 +119,26 @@ services:
       - DB_NAME=customers_db
     depends_on:
       - customer-db
+    restart: on-failure
+    networks:
+      - microservices-network
+
+  # Auth Service
+  auth-service:
+    build:
+      context: .
+      dockerfile: ./auth-service/Dockerfile
+    ports:
+      - "8070:8070"
+    environment:
+      - DB_HOST=auth-db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=canh177
+      - DB_NAME=auth_db
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - auth-db
     restart: on-failure
     networks:
       - microservices-network
@@ -492,6 +514,20 @@ services:
     networks:
       - microservices-network
 
+  # Auth Database
+  auth-db:
+    image: postgres:16-alpine
+    ports:
+      - "5444:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=canh177
+      - POSTGRES_DB=auth_db
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+
 volumes:
   product-db-data:
   order-db-data:
@@ -505,6 +541,7 @@ volumes:
   search-db-data:
   logistics-db-data:
   promotion-db-data:
+  auth-db-data:
   prometheus_data:
   grafana_data:
   redis_data:

@@ -25,6 +25,7 @@ var (
 	paymentServiceURL      = getEnv("PAYMENT_SERVICE_URL", "http://payment-service:8084")
 	customerServiceURL     = getEnv("CUSTOMER_SERVICE_URL", "http://customer-service:8085")
 	adminServiceURL        = getEnv("ADMIN_SERVICE_URL", "http://admin-service:8086")
+	authServiceURL         = getEnv("AUTH_SERVICE_URL", "http://auth-service:8070")
 	cartServiceURL         = getEnv("CART_SERVICE_URL", "http://cart-service:8087")
 	reviewServiceURL       = getEnv("REVIEW_SERVICE_URL", "http://review-rating-service:8088")
 	searchServiceURL       = getEnv("SEARCH_SERVICE_URL", "http://search-service:8089")
@@ -80,8 +81,8 @@ func main() {
 	// Products
 	apiV1.Any("/products/*path", createReverseProxy(productServiceURL, "/products"))
 
-	// Orders
-	apiV1.Any("/orders/*path", createReverseProxy(orderServiceURL, "/orders"))
+	// Orders (auth required)
+	apiV1.Any("/orders/*path", jwtMiddleware(), createReverseProxy(orderServiceURL, "/orders"))
 
 	// Inventory
 	apiV1.Any("/inventory/*path", createReverseProxy(inventoryServiceURL, "/inventory"))
@@ -89,17 +90,20 @@ func main() {
 	// Notifications
 	apiV1.Any("/notifications/*path", createReverseProxy(notificationServiceURL, "/notifications"))
 
-	// Payments
-	apiV1.Any("/payments/*path", createReverseProxy(paymentServiceURL, "/payments"))
+	// Payments (auth required)
+	apiV1.Any("/payments/*path", jwtMiddleware(), createReverseProxy(paymentServiceURL, "/payments"))
 
 	// New services proxies
 	apiV1.Any("/customers/*path", createReverseProxy(customerServiceURL, "/customers"))
-	apiV1.Any("/admins/*path", createReverseProxy(adminServiceURL, "/admins"))
-	apiV1.Any("/cart/*path", createReverseProxy(cartServiceURL, "/cart"))
+	// Admin routes require admin role
+	apiV1.Any("/admins/*path", jwtMiddleware(), adminRequired(), createReverseProxy(adminServiceURL, "/admins"))
+	apiV1.Any("/cart/*path", jwtMiddleware(), createReverseProxy(cartServiceURL, "/cart"))
 	apiV1.Any("/reviews/*path", createReverseProxy(reviewServiceURL, "/reviews"))
 	apiV1.Any("/search/*path", createReverseProxy(searchServiceURL, "/search"))
 	apiV1.Any("/logistics/*path", createReverseProxy(logisticsServiceURL, "/shipments"))
 	apiV1.Any("/promotions/*path", createReverseProxy(promotionServiceURL, "/promotions"))
+	// Auth routes (no auth required)
+	apiV1.Any("/auth/*path", createReverseProxy(authServiceURL, "/auth"))
 
 	// Documentation endpoint (moved to /api to avoid clashing with the SPA root)
 	r.GET("/api", func(c *gin.Context) {
