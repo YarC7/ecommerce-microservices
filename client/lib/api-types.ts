@@ -118,3 +118,33 @@ export interface CartItem {
     productId: string;
     quantity: number;
 }
+
+// ============================================================================
+// API Client Configuration Types
+// ============================================================================
+
+export interface RetryConfig {
+    maxAttempts: number;
+    initialDelayMs: number;
+    maxDelayMs: number;
+    exponentialBackoff: boolean;
+    retryableStatusCodes: number[];
+}
+
+export interface CacheConfig {
+    enabled: boolean;
+    ttlMs: number;
+    cacheKey?: string;
+}
+
+export interface RequestConfig {
+    retry?: Partial<RetryConfig>;
+    caching?: Partial<CacheConfig>;
+    cancelToken?: AbortSignal;
+}
+
+export interface CachedResponse<T> {
+    data: T;
+    timestamp: number;
+    ttl: number;
+}
