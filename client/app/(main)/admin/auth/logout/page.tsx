@@ -9,7 +9,7 @@ export default function AdminLogoutPage() {
     useEffect(() => {
         async function logout() {
             try {
-                await fetch("/api/auth/logout", { method: "POST" });
+                await fetch("/api/v1/auth/logout", { method: "POST" });
             } catch (error) {
                 console.error("Logout error:", error);
             } finally {
