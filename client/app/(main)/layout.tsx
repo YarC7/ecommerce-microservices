@@ -4,20 +4,17 @@ import { decodeJwt } from "@/lib/decodeJwt";
 import React from "react";
 import Link from "next/link";
 
-export default function MainLayout({
+export default async function MainLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = cookies();
-  const token = (cookieStore as any).get?.("access_token")?.value ?? null;
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access_token")?.value ?? null;
   const payload = decodeJwt(token ?? undefined) as any | null;
 
-  const now = Math.floor(Date.now() / 1000);
-  if (!payload || (payload.exp && payload.exp <= now)) {
-    // Not authenticated — redirect to login
-    redirect("/auth/login");
-  }
+  // Don't enforce auth globally here — allow public pages like /auth/login to render.
+  // Show a login link when unauthenticated instead of redirecting.
 
   // If we want, we can expose user via props or context; for now show basic nav
   return (
@@ -30,7 +27,11 @@ export default function MainLayout({
             <Link href="/customer">Customer</Link>
             <Link href="/auth/logout">Logout</Link>
             <div style={{ marginLeft: "auto" }}>
-              {payload?.sub ? `User ${payload.sub}` : null}
+              {payload?.sub ? (
+                `User ${payload.sub}`
+              ) : (
+                <Link href="/auth/login">Sign in</Link>
+              )}
             </div>
           </nav>
         </header>

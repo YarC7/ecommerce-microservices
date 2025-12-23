@@ -19,7 +19,7 @@ function decodeJwt(token?: string | null) {
   }
 }
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Only protect UI routes under these paths

@@ -3,13 +3,13 @@ import { redirect } from "next/navigation";
 import { decodeJwt } from "@/lib/decodeJwt";
 import React from "react";
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = cookies();
-  const token = (cookieStore as any).get?.("access_token")?.value ?? null;
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access_token")?.value ?? null;
   const payload = decodeJwt(token ?? undefined) as any | null;
 
   const now = Math.floor(Date.now() / 1000);
