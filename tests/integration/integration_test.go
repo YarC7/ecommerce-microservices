@@ -158,50 +158,74 @@ func TestEndToEnd_Flow(t *testing.T) {
 		t.Fatalf("create inventory failed: status=%d body=%s", invRes.StatusCode, string(b))
 	}
 
-	// 7) Create an order (auth required)
-	order := map[string]interface{}{"product_id": 1, "quantity": 2}
+	// 7) Create an order with payment (auth required)
+	order := map[string]interface{}{"product_id": 1, "quantity": 2, "total_price": 100.0, "currency": "usd"}
 	ob, _ := json.Marshal(order)
-	oreq, _ := http.NewRequest("POST", "http://localhost:8000/api/v1/orders", bytes.NewReader(ob))
+	oreq, _ := http.NewRequest("POST", "http://localhost:8000/api/v1/orders/with-payment", bytes.NewReader(ob))
 	oreq.Header.Set("Content-Type", "application/json")
 	oreq.Header.Set("Authorization", "Bearer "+loginResp.AccessToken)
 	ores, err := http.DefaultClient.Do(oreq)
 	if err != nil {
-		t.Fatalf("create order request failed: %v", err)
+		t.Fatalf("create order with payment request failed: %v", err)
 	}
 	if ores.StatusCode != http.StatusCreated {
 		b, _ := ioutil.ReadAll(ores.Body)
-		t.Fatalf("create order failed: status=%d body=%s", ores.StatusCode, string(b))
+		t.Fatalf("create order with payment failed: status=%d body=%s", ores.StatusCode, string(b))
 	}
-	var orderRes struct{ ID int `json:"id"` }
-	if err := json.NewDecoder(ores.Body).Decode(&orderRes); err != nil {
-		t.Fatalf("failed to decode order response: %v", err)
+	var createResp struct {
+		Order struct{ ID int `json:"id"` } `json:"order"`
+		Payment struct {
+			Payment struct{
+				StripePaymentID string `json:"stripe_payment_id" json:"stripe_payment_id"`
+			} `json:"payment"`
+		} `json:"payment"`
+	}
+	if err := json.NewDecoder(ores.Body).Decode(&createResp); err != nil {
+		t.Fatalf("failed to decode create order with payment response: %v", err)
+	}
+	orderResID := createResp.Order.ID
+	stripePaymentID := createResp.Payment.Payment.StripePaymentID
+
+	// 8) Confirm payment (auth required)
+	confirmReq := map[string]string{"payment_intent_id": stripePaymentID}
+	confirmB, _ := json.Marshal(confirmReq)
+	confirmReqHTTP, _ := http.NewRequest("POST", "http://localhost:8000/api/v1/payments/confirm", bytes.NewReader(confirmB))
+	confirmReqHTTP.Header.Set("Content-Type", "application/json")
+	confirmReqHTTP.Header.Set("Authorization", "Bearer "+loginResp.AccessToken)
+	confirmRes, err := http.DefaultClient.Do(confirmReqHTTP)
+	if err != nil {
+		t.Fatalf("confirm payment request failed: %v", err)
+	}
+	if confirmRes.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(confirmRes.Body)
+		t.Fatalf("confirm payment failed: status=%d body=%s", confirmRes.StatusCode, string(b))
 	}
 
-	// 8) Get order and verify owner
-	goreq, _ := http.NewRequest("GET", fmt.Sprintf("http://localhost:8000/api/v1/orders/%d", orderRes.ID), nil)
-	goreq.Header.Set("Authorization", "Bearer "+loginResp.AccessToken)
-	gores, err := http.DefaultClient.Do(goreq)
-	if err != nil {
-		t.Fatalf("get order request failed: %v", err)
+	// 9) Wait for order status to become 'completed' (poll)
+	completed := false
+	for i := 0; i < 10; i++ {
+		goreq, _ := http.NewRequest("GET", fmt.Sprintf("http://localhost:8000/api/v1/orders/%d", orderResID), nil)
+		goreq.Header.Set("Authorization", "Bearer "+loginResp.AccessToken)
+		gores, err := http.DefaultClient.Do(goreq)
+		if err != nil {
+			t.Fatalf("get order request failed: %v", err)
+		}
+		if gores.StatusCode != http.StatusOK {
+			b, _ := ioutil.ReadAll(gores.Body)
+			t.Fatalf("get order failed: status=%d body=%s", gores.StatusCode, string(b))
+		}
+		var or struct{ Status string `json:"status"` }
+		if err := json.NewDecoder(gores.Body).Decode(&or); err != nil {
+			t.Fatalf("failed to decode order response: %v", err)
+		}
+		if or.Status == "completed" {
+			completed = true
+			break
+		}
+		time.Sleep(1 * time.Second)
 	}
-	if gores.StatusCode != http.StatusOK {
-		b, _ := ioutil.ReadAll(gores.Body)
-		t.Fatalf("get order failed: status=%d body=%s", gores.StatusCode, string(b))
-	}
-
-	// 9) Update order status to completed
-	statusReq := map[string]string{"status": "completed"}
-	statusB, _ := json.Marshal(statusReq)
-	statusReqHTTP, _ := http.NewRequest("PATCH", fmt.Sprintf("http://localhost:8000/api/v1/orders/%d/status", orderRes.ID), bytes.NewReader(statusB))
-	statusReqHTTP.Header.Set("Content-Type", "application/json")
-	statusReqHTTP.Header.Set("Authorization", "Bearer "+loginResp.AccessToken)
-	statusRes, err := http.DefaultClient.Do(statusReqHTTP)
-	if err != nil {
-		t.Fatalf("update status request failed: %v", err)
-	}
-	if statusRes.StatusCode != http.StatusOK {
-		b, _ := ioutil.ReadAll(statusRes.Body)
-		t.Fatalf("update status failed: status=%d body=%s", statusRes.StatusCode, string(b))
+	if !completed {
+		t.Fatalf("order did not transition to completed after payment confirmation")
 	}
 
 	// Success

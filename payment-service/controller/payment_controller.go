@@ -1,7 +1,10 @@
 package controller
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -196,6 +199,30 @@ func (pc *PaymentController) ConfirmPayment(c *gin.Context) {
 	response := model.PaymentResponse{
 		Payment: payment,
 		Message: "Payment status updated successfully",
+	}
+
+	// If payment succeeded, attempt to update order status to 'completed'
+	if status == model.PaymentStatusSucceeded {
+		go func(orderID int, customerID int) {
+			orderServiceURL := getEnv("ORDER_SERVICE_URL", "http://order-service:8081")
+			url := fmt.Sprintf("%s/orders/%d/status", orderServiceURL, orderID)
+			body := map[string]string{"status": "completed"}
+			b, _ := json.Marshal(body)
+			req, _ := http.NewRequest("PATCH", url, bytes.NewReader(b))
+			req.Header.Set("Content-Type", "application/json")
+			// Set X-User-Id header so ownership checks pass
+			req.Header.Set("X-User-Id", strconv.Itoa(customerID))
+			client := &http.Client{Timeout: 10 * time.Second}
+			resp, err := client.Do(req)
+			if err != nil {
+				log.Printf("Failed to notify order service about payment success: %v\n", err)
+				return
+			}
+			defer resp.Body.Close()
+			if resp.StatusCode != http.StatusOK {
+				log.Printf("Order service returned non-OK status when updating status: %d\n", resp.StatusCode)
+			}
+		}(payment.OrderID, payment.CustomerID)
 	}
 
 	c.JSON(http.StatusOK, response)
