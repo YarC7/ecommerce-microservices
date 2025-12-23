@@ -5,7 +5,8 @@ import { NextResponse } from "next/server";
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
 export async function POST(req: NextRequest) {
-  const refreshToken = cookies().get("refresh_token")?.value;
+  const cookieStore = await cookies();
+  const refreshToken = cookieStore.get("refresh_token")?.value;
   try {
     if (refreshToken) {
       await fetch(`${API_BASE}/api/v1/auth/logout`, {
@@ -20,9 +21,9 @@ export async function POST(req: NextRequest) {
   }
 
   // clear cookies
-  cookies().delete("access_token");
-  cookies().delete("refresh_token");
-  cookies().delete("user");
+  cookieStore.delete("access_token");
+  cookieStore.delete("refresh_token");
+  cookieStore.delete("user");
 
   return NextResponse.json({ ok: true });
 }
