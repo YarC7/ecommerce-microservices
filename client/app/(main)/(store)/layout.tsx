@@ -4,6 +4,7 @@ import { ShoppingCart, User, Search, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cookies } from "next/headers";
 import { decodeJwt } from "@/lib/decodeJwt";
+import Image from "next/image";
 
 export default async function StoreLayout({
     children,
@@ -18,44 +19,62 @@ export default async function StoreLayout({
     return (
         <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
             {/* Header */}
-            <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+            <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
                 <div className="container mx-auto px-4">
                     <div className="flex h-16 items-center justify-between">
                         {/* Logo */}
                         <Link href="/" className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                                <ShoppingCart className="h-5 w-5 text-white" />
+                            <div className="h-8 w-8 rounded-lg flex items-center justify-center">
                             </div>
-                            <span className="font-bold text-xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                Go Store
-                            </span>
                         </Link>
 
                         {/* Navigation */}
                         <nav className="hidden md:flex items-center gap-6">
-                            <Link
-                                href="/"
-                                className="text-sm font-medium text-slate-700 hover:text-purple-600 dark:text-slate-300 dark:hover:text-purple-400 transition-colors"
-                            >
-                                Home
+                            <Link href="/" className="flex items-center gap-2">
+                                <div className="h-8 w-8 rounded-lg flex items-center justify-center">
+                                    <Image
+                                        src="/icon/apple.png"
+                                        alt="Logo"
+                                        width={32}
+                                        height={32}
+                                    />
+                                </div>
                             </Link>
                             <Link
-                                href="/products"
-                                className="text-sm font-medium text-slate-700 hover:text-purple-600 dark:text-slate-300 dark:hover:text-purple-400 transition-colors"
+                                href="/iphone"
+                                className="text-sm font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
                             >
-                                Products
+                                iPhone
                             </Link>
                             <Link
-                                href="/deals"
-                                className="text-sm font-medium text-slate-700 hover:text-purple-600 dark:text-slate-300 dark:hover:text-purple-400 transition-colors"
+                                href="/ipad"
+                                className="text-sm font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
                             >
-                                Deals
+                                iPad
                             </Link>
                             <Link
-                                href="/about"
-                                className="text-sm font-medium text-slate-700 hover:text-purple-600 dark:text-slate-300 dark:hover:text-purple-400 transition-colors"
+                                href="/macbook"
+                                className="text-sm font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
                             >
-                                About
+                                Mac
+                            </Link>
+                            <Link
+                                href="/watch"
+                                className="text-sm font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
+                            >
+                                Watch
+                            </Link>
+                            <Link
+                                href="/airpods"
+                                className="text-sm font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
+                            >
+                                AirPods
+                            </Link>
+                            <Link
+                                href="/accessories"
+                                className="text-sm font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
+                            >
+                                Accessories
                             </Link>
                         </nav>
 
@@ -75,7 +94,7 @@ export default async function StoreLayout({
                                 </Link>
                             ) : (
                                 <Link href="/login">
-                                    <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                                    <Button className="bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900">
                                         Sign In
                                     </Button>
                                 </Link>
@@ -98,11 +117,11 @@ export default async function StoreLayout({
                         {/* Company Info */}
                         <div className="space-y-3">
                             <Link href="/" className="flex items-center gap-2">
-                                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
                                     <ShoppingCart className="h-5 w-5 text-white" />
                                 </div>
-                                <span className="font-bold text-lg bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                    Go Store
+                                <span className="font-bold text-lg text-slate-900 dark:text-white">
+                                    Store
                                 </span>
                             </Link>
                             <p className="text-sm text-muted-foreground">
@@ -115,17 +134,17 @@ export default async function StoreLayout({
                             <h3 className="font-semibold mb-3">Shop</h3>
                             <ul className="space-y-2 text-sm text-muted-foreground">
                                 <li>
-                                    <Link href="/products" className="hover:text-purple-600">
+                                    <Link href="/products" className="hover:text-slate-900 dark:hover:text-white">
                                         All Products
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link href="/deals" className="hover:text-purple-600">
+                                    <Link href="/deals" className="hover:text-slate-900 dark:hover:text-white">
                                         Deals
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link href="/new" className="hover:text-purple-600">
+                                    <Link href="/new" className="hover:text-slate-900 dark:hover:text-white">
                                         New Arrivals
                                     </Link>
                                 </li>
@@ -137,17 +156,17 @@ export default async function StoreLayout({
                             <h3 className="font-semibold mb-3">Customer Service</h3>
                             <ul className="space-y-2 text-sm text-muted-foreground">
                                 <li>
-                                    <Link href="/contact" className="hover:text-purple-600">
+                                    <Link href="/contact" className="hover:text-slate-900 dark:hover:text-white">
                                         Contact Us
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link href="/shipping" className="hover:text-purple-600">
+                                    <Link href="/shipping" className="hover:text-slate-900 dark:hover:text-white">
                                         Shipping Info
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link href="/returns" className="hover:text-purple-600">
+                                    <Link href="/returns" className="hover:text-slate-900 dark:hover:text-white">
                                         Returns
                                     </Link>
                                 </li>
@@ -159,17 +178,17 @@ export default async function StoreLayout({
                             <h3 className="font-semibold mb-3">Account</h3>
                             <ul className="space-y-2 text-sm text-muted-foreground">
                                 <li>
-                                    <Link href="/account" className="hover:text-purple-600">
+                                    <Link href="/account" className="hover:text-slate-900 dark:hover:text-white">
                                         My Account
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link href="/orders" className="hover:text-purple-600">
+                                    <Link href="/orders" className="hover:text-slate-900 dark:hover:text-white">
                                         Order History
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link href="/wishlist" className="hover:text-purple-600">
+                                    <Link href="/wishlist" className="hover:text-slate-900 dark:hover:text-white">
                                         Wishlist
                                     </Link>
                                 </li>

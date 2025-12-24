@@ -82,11 +82,11 @@ export default function MainShell({
         <Sidebar className="border-r border-slate-200/60 dark:border-slate-800/60 backdrop-blur-xl bg-white/80 dark:bg-slate-950/80">
           <SidebarHeader className="border-b border-slate-200/60 dark:border-slate-800/60 p-6">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center shadow-lg shadow-slate-500/30">
                 <LayoutDashboard className="h-5 w-5 text-white" />
               </div>
               <div className="flex flex-col">
-                <span className="font-bold text-lg bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
+                <span className="font-bold text-lg text-slate-900 dark:text-white">
                   Go Microservices
                 </span>
                 <span className="text-xs text-muted-foreground">
@@ -107,11 +107,11 @@ export default function MainShell({
                     <SidebarMenuItem key={item.name}>
                       <SidebarMenuButton
                         asChild
-                        className="group transition-all duration-200 hover:bg-gradient-to-r hover:from-indigo-500/10 hover:to-purple-500/10 dark:hover:from-indigo-500/20 dark:hover:to-purple-500/20 rounded-lg px-3 py-2.5"
+                        className="group transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg px-3 py-2.5"
                       >
                         <Link href={item.href} className="flex items-center gap-3">
-                          <item.icon className="h-5 w-5 text-slate-600 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200" />
-                          <span className="font-medium text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
+                          <item.icon className="h-5 w-5 text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors duration-200" />
+                          <span className="font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors duration-200">
                             {item.name}
                           </span>
                         </Link>
@@ -131,7 +131,7 @@ export default function MainShell({
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       asChild
-                      className="group transition-all duration-200 hover:bg-gradient-to-r hover:from-indigo-500/10 hover:to-purple-500/10 dark:hover:from-indigo-500/20 dark:hover:to-purple-500/20 rounded-lg px-3 py-2.5"
+                      className="group transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg px-3 py-2.5"
                     >
                       <Link href={logoutUrl} className="flex items-center gap-3">
                         <LogOut className="h-5 w-5 text-slate-600 dark:text-slate-400 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-200" />
@@ -147,9 +147,9 @@ export default function MainShell({
           </SidebarContent>
 
           <SidebarFooter className="mt-auto border-t border-slate-200/60 dark:border-slate-800/60 p-4">
-            <div className="flex items-center gap-3 px-2 py-2 rounded-lg bg-gradient-to-r from-indigo-500/5 to-purple-500/5 dark:from-indigo-500/10 dark:to-purple-500/10">
-              <Avatar className="h-8 w-8 border-2 border-indigo-500/30">
-                <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white text-xs font-bold">
+            <div className="flex items-center gap-3 px-2 py-2 rounded-lg bg-slate-100 dark:bg-slate-800">
+              <Avatar className="h-8 w-8 border-2 border-slate-300 dark:border-slate-700">
+                <AvatarFallback className="bg-gradient-to-br from-slate-700 to-slate-900 text-white text-xs font-bold">
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
@@ -187,7 +187,7 @@ export default function MainShell({
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Search..."
-                    className="pl-10 bg-slate-100/50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 focus:border-indigo-500 dark:focus:border-indigo-500 transition-colors duration-200"
+                    className="pl-10 bg-slate-100/50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 focus:border-slate-500 dark:focus:border-slate-500 transition-colors duration-200"
                   />
                 </div>
               </div>
@@ -218,8 +218,8 @@ export default function MainShell({
                       variant="ghost"
                       className="gap-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200"
                     >
-                      <Avatar className="h-8 w-8 border-2 border-indigo-500/30">
-                        <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white text-xs font-bold">
+                      <Avatar className="h-8 w-8 border-2 border-slate-300 dark:border-slate-700">
+                        <AvatarFallback className="bg-gradient-to-br from-slate-700 to-slate-900 text-white text-xs font-bold">
                           {userInitials}
                         </AvatarFallback>
                       </Avatar>

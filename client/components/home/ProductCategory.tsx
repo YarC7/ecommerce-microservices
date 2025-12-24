@@ -77,7 +77,21 @@ export function ProductCategory({ category, title, limit = 4 }: ProductCategoryP
         },
     ];
 
-    const products = (data as Product[]) || mockProducts;
+    // Fallback to mock data if API fails or returns no data
+    // Handle both array response and object response with products property
+    let products: Product[] = mockProducts;
+    if (data) {
+        if (Array.isArray(data)) {
+            products = data as Product[];
+        } else if ((data as any).products && Array.isArray((data as any).products)) {
+            products = (data as any).products;
+        }
+    }
+
+    // Log for debugging
+    if (error) {
+        console.warn(`[ProductCategory] API error, using mock data:`, error.message);
+    }
 
     const formatPrice = (price: number) => {
         return new Intl.NumberFormat("vi-VN", {
@@ -86,21 +100,12 @@ export function ProductCategory({ category, title, limit = 4 }: ProductCategoryP
         }).format(price);
     };
 
-    if (error) {
-        return (
-            <section className="container mx-auto px-4 py-12">
-                <h2 className="text-3xl font-bold mb-8">{title}</h2>
-                <p className="text-muted-foreground">Failed to load products. Please try again later.</p>
-            </section>
-        );
-    }
-
     return (
         <section className="container mx-auto px-4 py-12">
             <div className="flex items-center justify-between mb-8">
                 <h2 className="text-3xl font-bold">{title}</h2>
                 <Link href={`/products?category=${category}`}>
-                    <Button variant="ghost" className="text-purple-600 hover:text-purple-700">
+                    <Button variant="ghost" className="text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
                         Xem tất cả →
                     </Button>
                 </Link>
@@ -128,7 +133,7 @@ export function ProductCategory({ category, title, limit = 4 }: ProductCategoryP
                     {products.slice(0, limit).map((product) => (
                         <Card key={product.id} className="group hover:shadow-lg transition-shadow">
                             <CardHeader className="relative p-0">
-                                <div className="relative h-48 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/20 dark:to-pink-900/20 rounded-t-lg overflow-hidden">
+                                <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 rounded-t-lg overflow-hidden">
                                     {product.image ? (
                                         <img
                                             src={product.image}
@@ -137,7 +142,7 @@ export function ProductCategory({ category, title, limit = 4 }: ProductCategoryP
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center">
-                                            <ShoppingCart className="w-16 h-16 text-purple-400" />
+                                            <ShoppingCart className="w-16 h-16 text-slate-400" />
                                         </div>
                                     )}
                                     {product.discount && (
@@ -159,7 +164,7 @@ export function ProductCategory({ category, title, limit = 4 }: ProductCategoryP
                             </CardHeader>
                             <CardContent className="pt-4">
                                 <CardTitle className="mb-2 line-clamp-2">{product.name}</CardTitle>
-                                {product.description && (
+                                {/* {product.description && (
                                     <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                                         {product.description}
                                     </p>
@@ -169,9 +174,9 @@ export function ProductCategory({ category, title, limit = 4 }: ProductCategoryP
                                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                                         <span className="text-sm font-medium">{product.rating}</span>
                                     </div>
-                                )}
+                                )} */}
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xl font-bold text-purple-600">
+                                    <span className="text-xl font-bold text-slate-900 dark:text-white">
                                         {formatPrice(product.price)}
                                     </span>
                                     {product.originalPrice && (
@@ -190,7 +195,7 @@ export function ProductCategory({ category, title, limit = 4 }: ProductCategoryP
                                     <Link href={`/products/${product.id}`}>Chi tiết</Link>
                                 </Button>
                                 <Button
-                                    className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                                    className="flex-1 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900"
                                 >
                                     <ShoppingCart className="w-4 h-4 mr-2" />
                                     Thêm

@@ -59,8 +59,8 @@ export function Newsfeed() {
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                     />
                                 ) : (
-                                    <div className="w-full h-full bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/20 dark:to-pink-900/20 flex items-center justify-center">
-                                        <Calendar className="w-16 h-16 text-purple-400" />
+                                    <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
+                                        <Calendar className="w-16 h-16 text-slate-400" />
                                     </div>
                                 )}
                                 {news.category && (
@@ -73,7 +73,7 @@ export function Newsfeed() {
                             </div>
                         </CardHeader>
                         <CardContent className="pt-4">
-                            <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-purple-600 transition-colors">
+                            <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
                                 {news.title}
                             </h3>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -90,7 +90,7 @@ export function Newsfeed() {
                     variant="outline"
                     size="lg"
                     asChild
-                    className="bg-blue-600 text-white hover:bg-blue-700 border-blue-600"
+                    className="bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 border-slate-900 dark:border-white"
                 >
                     <Link href="/newsfeed">
                         Xem tất cả Tin Tức →

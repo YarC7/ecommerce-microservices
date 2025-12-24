@@ -47,6 +47,9 @@ export function useApi<T>(
     // Abort controller for request cancellation
     const abortControllerRef = useRef<AbortController | null>(null);
 
+    // Track if initial execution has been done
+    const hasExecutedRef = useRef(false);
+
     const execute = useCallback(async () => {
         // Cancel any pending request
         if (abortControllerRef.current) {
@@ -82,11 +85,13 @@ export function useApi<T>(
         setError(null);
         setLocalLoading(false);
         stopLoading(requestId);
+        hasExecutedRef.current = false;
     }, [requestId, stopLoading]);
 
-    // Execute immediately if requested
+    // Execute immediately if requested (only once on mount)
     useEffect(() => {
-        if (immediate) {
+        if (immediate && !hasExecutedRef.current) {
+            hasExecutedRef.current = true;
             execute();
         }
 
@@ -97,7 +102,8 @@ export function useApi<T>(
             }
             stopLoading(requestId);
         };
-    }, [immediate, execute, requestId, stopLoading]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [immediate, requestId, stopLoading]);
 
     return {
         data,
