@@ -326,24 +326,3 @@ deploy:production:
   when: manual
   needs:
     - deploy:staging
-
-# ============================================================================
-# Rollback Job
-# ============================================================================
-
-rollback:production:
-  stage: deploy
-  image: bitnami/kubectl:latest
-  script:
-    - mkdir -p ~/.kube
-    - echo "$KUBE_CONFIG_PROD" | base64 -d > ~/.kube/config
-    - kubectl config use-context production
-    - kubectl rollout undo deployment/api-gateway -n microservices
-    - kubectl rollout undo deployment/client -n microservices
-    - kubectl rollout undo deployment/nginx -n microservices
-  environment:
-    name: production
-    action: rollback
-  only:
-    - main
-  when: manual
