@@ -3,7 +3,7 @@ services:
   nginx:
     build:
       context: ./nginx
-      dockerfile: Dockerfile
+      dockerfile: D/microservicesockerfile
     ports:
       - "80:80"
       - "443:443"
@@ -20,7 +20,7 @@ services:
   api-gateway:
     build:
       context: .
-      dockerfile: ./api-gateway/Dockerfile
+      dockerfile: ./microservices/api-gateway/Dockerfile
     ports:
       - "8000:8000"
     environment:
@@ -65,7 +65,7 @@ services:
   client:
     build:
       context: ../client
-      dockerfile: Dockerfile
+      dockerfile: D/microservicesockerfile
     ports:
       - "3000:3000"
     environment:
@@ -112,7 +112,7 @@ services:
   product-service:
     build:
       context: .
-      dockerfile: ./product-service/Dockerfile
+      dockerfile: ./microservices/product-service/Dockerfile
     ports:
       - "8080:8080"
     environment:
@@ -131,7 +131,7 @@ services:
   order-service:
     build:
       context: .
-      dockerfile: ./order-service/Dockerfile
+      dockerfile: ./microservices/order-service/Dockerfile
     ports:
       - "8081:8081"
     environment:
@@ -154,7 +154,7 @@ services:
   customer-service:
     build:
       context: .
-      dockerfile: ./customer-service/Dockerfile
+      dockerfile: ./microservices/customer-service/Dockerfile
     ports:
       - "8085:8085"
     environment:
@@ -173,7 +173,7 @@ services:
   auth-service:
     build:
       context: .
-      dockerfile: ./auth-service/Dockerfile
+      dockerfile: ./microservices/auth-service/Dockerfile
     ports:
       - "8070:8070"
     environment:
@@ -193,7 +193,7 @@ services:
   admin-service:
     build:
       context: .
-      dockerfile: ./admin-service/Dockerfile
+      dockerfile: ./microservices/admin-service/Dockerfile
     ports:
       - "8086:8086"
     environment:
@@ -212,7 +212,7 @@ services:
   cart-service:
     build:
       context: .
-      dockerfile: ./cart-service/Dockerfile
+      dockerfile: ./microservices/cart-service/Dockerfile
     ports:
       - "8087:8087"
     environment:
@@ -231,7 +231,7 @@ services:
   review-rating-service:
     build:
       context: .
-      dockerfile: ./review-rating-service/Dockerfile
+      dockerfile: ./microservices/review-rating-service/Dockerfile
     ports:
       - "8088:8088"
     environment:
@@ -250,7 +250,7 @@ services:
   search-service:
     build:
       context: .
-      dockerfile: ./search-service/Dockerfile
+      dockerfile: ./microservices/search-service/Dockerfile
     ports:
       - "8089:8089"
     environment:
@@ -269,7 +269,7 @@ services:
   logistics-service:
     build:
       context: .
-      dockerfile: ./logistics-service/Dockerfile
+      dockerfile: ./microservices/logistics-service/Dockerfile
     ports:
       - "8090:8090"
     environment:
@@ -288,7 +288,7 @@ services:
   promotion-service:
     build:
       context: .
-      dockerfile: ./promotion-service/Dockerfile
+      dockerfile: ./microservices/promotion-service/Dockerfile
     ports:
       - "8091:8091"
     environment:
@@ -307,7 +307,7 @@ services:
   inventory-service:
     build:
       context: .
-      dockerfile: ./inventory-service/Dockerfile
+      dockerfile: ./microservices/inventory-service/Dockerfile
     ports:
       - "8082:8082"
     environment:
@@ -326,7 +326,7 @@ services:
   notification-service:
     build:
       context: .
-      dockerfile: ./notification-service/Dockerfile
+      dockerfile: ./microservices/notification-service/Dockerfile
     ports:
       - "8083:8083"
     environment:
@@ -345,7 +345,7 @@ services:
   payment-service:
     build:
       context: .
-      dockerfile: ./payment-service/Dockerfile
+      dockerfile: ./microservices/payment-service/Dockerfile
     ports:
       - "8084:8084"
     environment:
